@@ -1,8 +1,8 @@
-import {refresh} from 'react-native-app-auth';
+import { refresh, revoke } from 'react-native-app-auth';
 import axios from 'axios';
-import {authConfig} from '../auth/authConfig';
-import {Alert} from 'react-native';
-import {logoutFromSpotify} from '../../components/Headers/HomeHeader';
+import { authConfig } from '../auth/authConfig';
+import { Alert } from 'react-native';
+import { logoutFromSpotify } from '../../components/Headers/HomeHeader';
 
 
 export const createSpotifyAPI = (initialAccessToken, initialRefreshToken) => {
@@ -19,9 +19,11 @@ export const createSpotifyAPI = (initialAccessToken, initialRefreshToken) => {
     console.log('refreshing token...', refreshToken);
 
     try {
-      const result = await refresh(authConfig, {refreshToken});
+      const result = await refresh(authConfig, { refreshToken });
       accessToken = result.accessToken;
       refreshToken = result.refreshToken;
+
+
       console.log(result);
     } catch (err) {
       console.error('Failed to refresh token:', err);

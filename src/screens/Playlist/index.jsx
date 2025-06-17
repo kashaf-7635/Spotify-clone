@@ -6,33 +6,36 @@ import {
   FlatList,
   TouchableOpacity,
 } from 'react-native';
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import LinearGradient from 'react-native-linear-gradient';
 import SimpleLineIcons from '@react-native-vector-icons/simple-line-icons';
 import Entypo from '@react-native-vector-icons/entypo';
-import {moderateScale, scale, verticalScale} from 'react-native-size-matters';
+import { moderateScale, scale, verticalScale } from 'react-native-size-matters';
 import Fonts from '../../utils/constants/fonts';
-import {useRequest} from '../../hooks/useRequest';
-import {useDispatch, useSelector} from 'react-redux';
-import {createSpotifyAPI} from '../../utils/axios/axiosInstance';
+import { useRequest } from '../../hooks/useRequest';
+import { useDispatch, useSelector } from 'react-redux';
+import { createSpotifyAPI } from '../../utils/axios/axiosInstance';
 import Loading from '../../components/Loading';
 import Colors from '../../utils/constants/colors';
 import FontAwesome from '@react-native-vector-icons/fontawesome';
 import Foundation from '@react-native-vector-icons/foundation';
 import TrackCard from '../../components/Cards/TrackCard';
-import {State, usePlaybackState} from 'react-native-track-player';
+import TrackPlayer, { State, usePlaybackState } from 'react-native-track-player';
 import TextCmp from '../../components/Styled/TextCmp';
 import ImageCmp from '../../components/Styled/ImageCmp';
+import { loadAndPlayPlaylist, playPlaylistFromIndex, togglePlayPause } from '../../utils/helpers/player';
 
-const Playlist = ({route, navigation}) => {
+
+const Playlist = ({ route, navigation }) => {
   const dispatch = useDispatch();
   const playlistId = route?.params.playlistId;
-  const {requestHandler, isLoading} = useRequest();
+  const { requestHandler, isLoading } = useRequest();
   const accessToken = useSelector(state => state.auth.accessToken);
   const refreshToken = useSelector(state => state.auth.refreshToken);
   const [playlist, setPlaylist] = useState(null);
   const playbackState = usePlaybackState().state;
   const isPlaying = playbackState === State.Playing;
+  const playingObj = useSelector(state => state.player.playingObj);
 
   useEffect(() => {
     if (!accessToken) return;
@@ -48,6 +51,19 @@ const Playlist = ({route, navigation}) => {
       },
     });
   }, [accessToken, route]);
+
+  const handlePlayPause = async () => {
+    const isSamePlaylist = playingObj?.albumId === playlist?.id;
+    if (!isSamePlaylist || !playingObj) {
+      loadAndPlayPlaylist(playlist);
+    } else {
+      await togglePlayPause();
+    }
+  };
+
+  const handleTrackSelect = async index => {
+    await playPlaylistFromIndex(playlist, index);
+  };
 
   return (
     <LinearGradient
@@ -87,13 +103,13 @@ const Playlist = ({route, navigation}) => {
                             {playlist?.name || 'Loading...'}
                           </TextCmp>
 
-                          <View style={[s.row, {marginTop: verticalScale(10)}]}>
+                          <View style={[s.row, { marginTop: verticalScale(10) }]}>
                             <TextCmp weight="bold" size={17}>
                               Created by' {playlist?.owner.display_name || ''}
                             </TextCmp>
                           </View>
 
-                          <View style={{marginTop: verticalScale(10)}}>
+                          <View style={{ marginTop: verticalScale(10) }}>
                             <TextCmp color={Colors.text400} size={15}>
                               Playlist
                               <Entypo
@@ -135,9 +151,14 @@ const Playlist = ({route, navigation}) => {
                         </View>
                         <View style={s.playPauseView}>
                           <TouchableOpacity
+                            onPress={handlePlayPause}
                             style={[s.iconCircle, s.iconCircleBig]}>
                             <Foundation
-                              name={isPlaying ? 'pause' : 'play'}
+                              name={
+                                isPlaying && playingObj?.albumId === playlist.id
+                                  ? 'pause'
+                                  : 'play'
+                              }
                               color="#000000"
                               size={moderateScale(35)}
                             />
@@ -147,8 +168,10 @@ const Playlist = ({route, navigation}) => {
                     </View>
                   </>
                 }
-                renderItem={({item}) => {
-                  return <TrackCard item={item.track} />;
+                renderItem={({ item, index }) => {
+                  return <TouchableOpacity onPress={() => handleTrackSelect(index)}>
+                    <TrackCard item={item.track} />
+                  </TouchableOpacity>;
                 }}
               />
             </View>

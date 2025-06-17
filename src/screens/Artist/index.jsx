@@ -6,28 +6,28 @@ import {
   FlatList,
   TouchableOpacity,
 } from 'react-native';
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import LinearGradient from 'react-native-linear-gradient';
 import SimpleLineIcons from '@react-native-vector-icons/simple-line-icons';
 import Entypo from '@react-native-vector-icons/entypo';
-import {moderateScale, scale, verticalScale} from 'react-native-size-matters';
+import { moderateScale, scale, verticalScale } from 'react-native-size-matters';
 import Fonts from '../../utils/constants/fonts';
-import {useRequest} from '../../hooks/useRequest';
-import {useDispatch, useSelector} from 'react-redux';
-import {createSpotifyAPI} from '../../utils/axios/axiosInstance';
+import { useRequest } from '../../hooks/useRequest';
+import { useDispatch, useSelector } from 'react-redux';
+import { createSpotifyAPI } from '../../utils/axios/axiosInstance';
 import Loading from '../../components/Loading';
 import Colors from '../../utils/constants/colors';
 import FontAwesome from '@react-native-vector-icons/fontawesome';
 import Foundation from '@react-native-vector-icons/foundation';
 import LibraryCard from '../../components/Cards/LibraryCard';
-import {State, usePlaybackState} from 'react-native-track-player';
+import { State, usePlaybackState } from 'react-native-track-player';
 import TextCmp from '../../components/Styled/TextCmp';
 import ImageCmp from '../../components/Styled/ImageCmp';
 
-const Artist = ({route, navigation}) => {
+const Artist = ({ route, navigation }) => {
   const dispatch = useDispatch();
   const artistId = route?.params.artistId;
-  const {requestHandler, isLoading} = useRequest();
+  const { requestHandler, isLoading } = useRequest();
   const accessToken = useSelector(state => state.auth.accessToken);
   const refreshToken = useSelector(state => state.auth.refreshToken);
   const [artist, setArtist] = useState(null);
@@ -95,7 +95,7 @@ const Artist = ({route, navigation}) => {
                             {artist?.name || 'Loading...'}
                           </TextCmp>
 
-                          <View style={[s.row, {marginTop: verticalScale(10)}]}>
+                          <View style={[s.row, { marginTop: verticalScale(10) }]}>
                             <TextCmp weight="bold" size={17}>
                               {artist?.genres.join(' , ')}
                             </TextCmp>
@@ -129,7 +129,7 @@ const Artist = ({route, navigation}) => {
                             />
                           </View>
                         </View>
-                        <View style={s.playPauseView}>
+                        {/* <View style={s.playPauseView}>
                           <TouchableOpacity
                             style={[s.iconCircle, s.iconCircleBig]}>
                             <Foundation
@@ -138,12 +138,12 @@ const Artist = ({route, navigation}) => {
                               size={moderateScale(35)}
                             />
                           </TouchableOpacity>
-                        </View>
+                        </View> */}
                       </View>
                     </View>
                   </>
                 }
-                renderItem={({item}) => {
+                renderItem={({ item }) => {
                   return <LibraryCard item={item} />;
                 }}
               />

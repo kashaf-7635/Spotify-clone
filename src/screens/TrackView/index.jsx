@@ -6,7 +6,7 @@ import {
   ScrollView,
   TouchableOpacity,
 } from 'react-native';
-import React, {useState, useEffect} from 'react';
+import React, { useState, useEffect } from 'react';
 import LinearGradient from 'react-native-linear-gradient';
 import SimpleLineIcons from '@react-native-vector-icons/simple-line-icons';
 import Entypo from '@react-native-vector-icons/entypo';
@@ -15,35 +15,68 @@ import MaterialIcons from '@react-native-vector-icons/material-icons';
 import Ionicons from '@react-native-vector-icons/ionicons';
 import Feather from '@react-native-vector-icons/feather';
 import Fantisto from '@react-native-vector-icons/fontisto';
-import {moderateScale, scale, verticalScale} from 'react-native-size-matters';
-import Fonts from '../../utils/constants/fonts';
+import { moderateScale, scale, verticalScale } from 'react-native-size-matters';
 import Colors from '../../utils/constants/colors';
 import Slider from '@react-native-community/slider';
 import Foundation from '@react-native-vector-icons/foundation';
-import {useDispatch, useSelector} from 'react-redux';
-import {formatTime} from '../../utils/helpers/time';
-import {usePlaybackState, State} from 'react-native-track-player';
-import {useRequest} from '../../hooks/useRequest';
-import {createSpotifyAPI} from '../../utils/axios/axiosInstance';
-import {getCurrentTrack, togglePlayPause} from '../../utils/helpers/player';
-import {setPlayingObj} from '../../store/playerSlice';
+import { useDispatch, useSelector } from 'react-redux';
+import { formatTime } from '../../utils/helpers/time';
+import TrackPlayer, { usePlaybackState, State, useProgress, Event, RepeatMode } from 'react-native-track-player';
+import { useRequest } from '../../hooks/useRequest';
+import { createSpotifyAPI } from '../../utils/axios/axiosInstance';
+import { getCurrentTrack, togglePlayPause } from '../../utils/helpers/player';
 import TextCmp from '../../components/Styled/TextCmp';
 import ImageCmp from '../../components/Styled/ImageCmp';
+import { useNavigation } from '@react-navigation/native';
 
 const TrackView = () => {
-  const dispatch = useDispatch();
+  const navigation = useNavigation()
   const playingObj = useSelector(state => state.player.playingObj);
-  const duration = playingObj?.duration_ms || 1;
-  const [position, setPosition] = useState(0);
+  const { position, duration } = useProgress(250);
+  const [repeatMode, setRepeatMode] = useState(RepeatMode.Off);
+
+
   const playbackState = usePlaybackState().state;
   const isPlaying = playbackState === State.Playing;
-  const {requestHandler, isLoading} = useRequest();
+  const { requestHandler, isLoading } = useRequest();
   const accessToken = useSelector(state => state.auth.accessToken);
   const refreshToken = useSelector(state => state.auth.refreshToken);
   const [album, setAlbum] = useState(null);
+  const [hasNext, setHasNext] = useState(false);
+  const [hasPrevious, setHasPrevious] = useState(false);
 
   useEffect(() => {
-    if (!accessToken) return;
+    const checkTrackAvailability = async () => {
+      const queue = await TrackPlayer.getQueue();
+      const current = await getCurrentTrack()
+
+      const currentIndex = queue.findIndex(track => track.id === current.id);
+
+      setHasNext(currentIndex < queue.length - 1);
+      setHasPrevious(currentIndex > 0);
+    };
+    checkTrackAvailability();
+    const listener = TrackPlayer.addEventListener(Event.PlaybackActiveTrackChanged, checkTrackAvailability);
+
+    return () => {
+      listener.remove();
+    };
+  }, []);
+
+  const handleNext = async () => {
+    if (hasNext) {
+      await TrackPlayer.skipToNext();
+    }
+  };
+
+  const handlePrevious = async () => {
+    if (hasPrevious) {
+      await TrackPlayer.skipToPrevious();
+    }
+  };
+
+  useEffect(() => {
+    if (!accessToken || !playingObj) return;
 
     const spotifyAPI = createSpotifyAPI(accessToken, refreshToken);
     requestHandler({
@@ -57,22 +90,39 @@ const TrackView = () => {
     });
   }, [accessToken, playingObj?.albumId]);
 
-  useEffect(() => {
-    let interval;
-    if (isPlaying) {
-      interval = setInterval(() => {
-        setPosition(prev => {
-          const next = prev + 1000;
-          return next >= duration ? duration : next;
-        });
-      }, 1000);
-    }
-    return () => clearInterval(interval);
-  }, [isPlaying, duration]);
-
   const handlePlayPause = async () => {
     await togglePlayPause();
   };
+
+  useEffect(() => {
+    if (!playingObj) {
+      navigation.goBack()
+    }
+  }, [playingObj])
+
+  useEffect(() => {
+    const fetchRepeatMode = async () => {
+      const mode = await TrackPlayer.getRepeatMode();
+      setRepeatMode(mode);
+    };
+    fetchRepeatMode();
+  }, []);
+
+  const toggleRepeat = async () => {
+    let newMode;
+
+    if (repeatMode === RepeatMode.Off) {
+      newMode = RepeatMode.Track;
+    } else if (repeatMode === RepeatMode.Track) {
+      newMode = RepeatMode.Queue;
+    } else {
+      newMode = RepeatMode.Off;
+    }
+
+    await TrackPlayer.setRepeatMode(newMode);
+    setRepeatMode(newMode);
+  };
+
 
   return (
     <>
@@ -82,18 +132,18 @@ const TrackView = () => {
         style={s.container}>
         <ScrollView
           showsVerticalScrollIndicator={false}
-          style={{flex: 1}}
+          style={{ flex: 1 }}
           contentContainerStyle={s.main}>
           <View style={s.main}>
             <View style={s.header}>
-              <View style={{flex: 0.1}}>
+              <View style={{ flex: 0.1 }}>
                 <SimpleLineIcons
                   name="arrow-down"
                   color={'white'}
                   size={moderateScale(20)}
                 />
               </View>
-              <View style={{flex: 0.8}}>
+              <View style={{ flex: 0.8 }}>
                 <TextCmp size={16} align="center">
                   {album?.name}
                 </TextCmp>
@@ -140,26 +190,23 @@ const TrackView = () => {
 
               <View style={s.slider}>
                 <Slider
-                  style={{width: '110%', height: verticalScale(40)}}
+                  style={{ width: '110%', height: verticalScale(40) }}
                   minimumValue={0}
                   maximumValue={1}
-                  value={position / duration}
-                  onSlidingComplete={value => {
-                    setPosition(value * duration); // seek to new position
+                  value={duration ? position / duration : 0}
+                  onSlidingComplete={async value => {
+                    await TrackPlayer.seekTo(value * duration);
                   }}
                   minimumTrackTintColor="#FFFFFF"
                   maximumTrackTintColor="#a3a2a2"
                   thumbTintColor="#FFFFFF"
                 />
-                <View style={{position: 'absolute', bottom: 0, left: 0}}>
-                  <TextCmp size={12}>{formatTime(position)}</TextCmp>
+                <View style={{ position: 'absolute', bottom: 0, left: 0 }}>
+                  <TextCmp size={12}>{formatTime(position * 1000)}</TextCmp>
                 </View>
 
-                <View style={{position: 'absolute', bottom: 0, right: 0}}>
-                  <TextCmp size={12}>
-                    {' '}
-                    -{formatTime(duration - position)}
-                  </TextCmp>
+                <View style={{ position: 'absolute', bottom: 0, right: 0 }}>
+                  <TextCmp size={12}>-{formatTime((duration - position) * 1000)}</TextCmp>
                 </View>
               </View>
 
@@ -173,10 +220,10 @@ const TrackView = () => {
                 </View>
 
                 <View style={s.mid}>
-                  <TouchableOpacity>
+                  <TouchableOpacity disabled={!hasPrevious} onPress={handlePrevious}>
                     <FontAwesome
                       name="step-backward"
-                      color="#FFFFFF"
+                      color={hasPrevious ? "#FFFFFF" : "#666666"}
                       size={moderateScale(40)}
                     />
                   </TouchableOpacity>
@@ -188,22 +235,24 @@ const TrackView = () => {
                     />
                   </TouchableOpacity>
 
-                  <TouchableOpacity>
+                  <TouchableOpacity disabled={!hasNext} onPress={handleNext}>
                     <FontAwesome
                       name="step-forward"
-                      color="#FFFFFF"
+                      color={hasNext ? "#FFFFFF" : "#666666"}
                       size={moderateScale(40)}
                     />
                   </TouchableOpacity>
                 </View>
 
-                <View style={s.right}>
+
+                <TouchableOpacity style={s.right} onPress={toggleRepeat}>
                   <Feather
                     name="repeat"
-                    color={Colors.green300}
+                    color={repeatMode === RepeatMode.Off ? '#CBB7B5' : Colors.green300}
                     size={moderateScale(30)}
                   />
-                </View>
+                </TouchableOpacity>
+
               </View>
 
               <View style={s.row}>

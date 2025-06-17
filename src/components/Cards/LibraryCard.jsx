@@ -1,17 +1,15 @@
-import {Image, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
+import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import React from 'react';
-import {moderateScale, scale, verticalScale} from 'react-native-size-matters';
+import { moderateScale, scale, verticalScale } from 'react-native-size-matters';
 import Fonts from '../../utils/constants/fonts';
 import Colors from '../../utils/constants/colors';
 import Entypo from '@react-native-vector-icons/entypo';
-import {setCurrentTrack} from '../../store/playerSlice';
-import {useDispatch} from 'react-redux';
-import {useNavigation} from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
 import TextCmp from '../Styled/TextCmp';
 import ImageCmp from '../Styled/ImageCmp';
+import { loadAndPlaySingleTrack } from '../../utils/helpers/player';
 
-const LibraryCard = ({item}) => {
-  const dispatch = useDispatch();
+const LibraryCard = ({ item }) => {
   const navigation = useNavigation();
   const image =
     item?.type === 'track'
@@ -20,19 +18,19 @@ const LibraryCard = ({item}) => {
 
   const handleNavigation = () => {
     if (item.type === 'track') {
-      dispatch(setCurrentTrack(item.id));
+      loadAndPlaySingleTrack(item)
     }
 
     if (item.type === 'album') {
-      navigation.navigate('Album', {albumId: item.id});
+      navigation.navigate('Album', { albumId: item.id });
     }
 
     if (item.type === 'playlist') {
-      navigation.navigate('Playlist', {playlistId: item.id});
+      navigation.navigate('Playlist', { playlistId: item.id });
     }
 
     if (item.type === 'artist') {
-      navigation.navigate('Artist', {artistId: item.id});
+      navigation.navigate('Artist', { artistId: item.id });
     }
   };
   return (

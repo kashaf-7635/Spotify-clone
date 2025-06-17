@@ -7,26 +7,26 @@ import {
   Text,
   TouchableOpacity,
 } from 'react-native';
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import RecentlyPlayedCard from '../../components/Cards/RecentlyPlayedCard';
 import Colors from '../../utils/constants/colors';
-import {useRequest} from '../../hooks/useRequest';
-import {useSelector} from 'react-redux';
-import {createSpotifyAPI} from '../../utils/axios/axiosInstance';
+import { useRequest } from '../../hooks/useRequest';
+import { useSelector } from 'react-redux';
+import { createSpotifyAPI } from '../../utils/axios/axiosInstance';
 import NewReleaseAlbum from '../../components/Cards/NewReleaseAlbum';
 import Loading from '../../components/Loading';
-import {scale, verticalScale} from 'react-native-size-matters';
+import { scale, verticalScale } from 'react-native-size-matters';
 import TextCmp from '../../components/Styled/TextCmp';
 import ImageCmp from '../../components/Styled/ImageCmp';
 
-const Home = ({navigation}) => {
+const Home = ({ navigation }) => {
   const [artists, setArtists] = useState([]);
   const [albums, setAlbums] = useState([]);
   const [results, setResults] = useState([]);
   const [newReleases, setNewRelease] = useState([]);
   const [tracks, setTracks] = useState([]);
 
-  const {requestHandler, isLoading} = useRequest();
+  const { requestHandler, isLoading } = useRequest();
   const accessToken = useSelector(state => state.auth.accessToken);
   const refreshToken = useSelector(state => state.auth.refreshToken);
 
@@ -146,7 +146,7 @@ const Home = ({navigation}) => {
         <Loading />
       ) : (
         <>
-          <ScrollView showsVerticalScrollIndicator={false} style={{flex: 1}}>
+          <ScrollView showsVerticalScrollIndicator={false} style={{ flex: 1 }}>
             <View
               style={{
                 flexGrow: 1,
@@ -158,7 +158,7 @@ const Home = ({navigation}) => {
                 horizontal
                 data={results}
                 keyExtractor={item => item.id}
-                renderItem={({item}) => {
+                renderItem={({ item }) => {
                   return <RecentlyPlayedCard item={item} />;
                 }}
               />
@@ -184,7 +184,7 @@ const Home = ({navigation}) => {
                 <TouchableOpacity
                   style={s.album}
                   onPress={() =>
-                    navigation.navigate('UserFeaturedItem', {type: 'tracks'})
+                    navigation.navigate('UserFeaturedItem', { type: 'tracks' })
                   }>
                   <ImageCmp
                     source={require('../../assets/images/album/1.png')}
@@ -195,7 +195,7 @@ const Home = ({navigation}) => {
                 <TouchableOpacity
                   style={s.album}
                   onPress={() =>
-                    navigation.navigate('UserFeaturedItem', {type: 'artists'})
+                    navigation.navigate('UserFeaturedItem', { type: 'artists' })
                   }>
                   <ImageCmp
                     source={require('../../assets/images/album/2.png')}
@@ -204,10 +204,28 @@ const Home = ({navigation}) => {
                   />
                 </TouchableOpacity>
               </View>
+              {tracks.length !== 0 && (
+                <View style={{ marginTop: verticalScale(15) }}>
+                  <View style={{ marginBottom: verticalScale(10) }}>
+                    <TextCmp weight="bold" size={20}>
+                      Editor's Picks
+                    </TextCmp>
+                  </View>
 
+                  <FlatList
+                    showsHorizontalScrollIndicator={false}
+                    horizontal
+                    data={tracks}
+                    keyExtractor={item => item.id}
+                    renderItem={({ item }) => {
+                      return <NewReleaseAlbum item={item} />;
+                    }}
+                  />
+                </View>
+              )}
               {newReleases.length !== 0 && (
-                <View style={{marginTop: verticalScale(15)}}>
-                  <View style={{marginBottom: verticalScale(10)}}>
+                <View style={{ marginTop: verticalScale(15) }}>
+                  <View style={{ marginBottom: verticalScale(10) }}>
                     <TextCmp weight="bold" size={20}>
                       Hand-picked new releases
                     </TextCmp>
@@ -218,12 +236,14 @@ const Home = ({navigation}) => {
                     horizontal
                     data={newReleases}
                     keyExtractor={item => item.id}
-                    renderItem={({item}) => {
+                    renderItem={({ item }) => {
                       return <NewReleaseAlbum item={item} />;
                     }}
                   />
                 </View>
               )}
+
+
             </View>
           </ScrollView>
         </>

@@ -1,50 +1,35 @@
 import {
-  Image,
   StyleSheet,
   View,
-  Text,
   TouchableOpacity,
-  ActivityIndicator,
 } from 'react-native';
-import React, {useEffect, useState} from 'react';
 import Colors from '../../utils/constants/colors';
-import {moderateScale, scale, verticalScale} from 'react-native-size-matters';
-import Fonts from '../../utils/constants/fonts';
+import { moderateScale, scale, verticalScale } from 'react-native-size-matters';
 import Foundation from '@react-native-vector-icons/foundation';
 import Slider from '@react-native-community/slider';
 import Entypo from '@react-native-vector-icons/entypo';
-import {useNavigation} from '@react-navigation/native';
-import {useDispatch, useSelector} from 'react-redux';
-import {State, usePlaybackState} from 'react-native-track-player';
-import {togglePlayPause} from '../../utils/helpers/player';
+import { useNavigation } from '@react-navigation/native';
+import { useSelector } from 'react-redux';
+import TrackPlayer, { State, usePlaybackState, useProgress } from 'react-native-track-player';
+import { getCurrentTrack, togglePlayPause } from '../../utils/helpers/player';
 import TextCmp from '../Styled/TextCmp';
 import ImageCmp from '../Styled/ImageCmp';
+import { useEffect } from 'react';
 
-const CurrentlyPlaying = ({style}) => {
+const CurrentlyPlaying = ({ style }) => {
   const navigation = useNavigation();
-  const dispatch = useDispatch();
+
   const playingObj = useSelector(state => state.player.playingObj);
-  const duration = playingObj?.duration_ms || 1;
-  const [position, setPosition] = useState(0);
+  const { position, duration } = useProgress(250);
   const playbackState = usePlaybackState().state;
   const isPlaying = playbackState === State.Playing;
 
-  useEffect(() => {
-    let interval;
-    if (isPlaying) {
-      interval = setInterval(() => {
-        setPosition(prev => {
-          const next = prev + 1000;
-          return next >= duration ? duration : next;
-        });
-      }, 1000);
-    }
-    return () => clearInterval(interval);
-  }, [isPlaying, duration]);
+
 
   const handlePlayPause = async () => {
     await togglePlayPause();
   };
+
 
   return (
     <>
@@ -106,9 +91,9 @@ const CurrentlyPlaying = ({style}) => {
           style={s.slider}
           minimumValue={0}
           maximumValue={1}
-          value={position / duration || 0}
-          onSlidingComplete={value => {
-            setPosition(value * duration);
+          value={duration ? position / duration : 0}
+          onSlidingComplete={async value => {
+            await TrackPlayer.seekTo(value * duration);
           }}
           minimumTrackTintColor="#FFFFFF"
           maximumTrackTintColor="#a3a2a2"
@@ -161,7 +146,7 @@ const s = StyleSheet.create({
     fontSize: 11,
   },
   slider: {
-    width: '100%',
+    width: '110%',
     height: verticalScale(20),
     position: 'absolute',
     bottom: verticalScale(-10),
