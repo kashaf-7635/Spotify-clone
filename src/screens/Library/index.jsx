@@ -7,23 +7,23 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import Fonts from '../../utils/constants/fonts';
-import {moderateScale, scale, verticalScale} from 'react-native-size-matters';
+import { moderateScale, scale, verticalScale } from 'react-native-size-matters';
 import FontAwesome from '@react-native-vector-icons/fontawesome';
 import Octicons from '@react-native-vector-icons/octicons';
 import Colors from '../../utils/constants/colors';
 import Entypo from '@react-native-vector-icons/entypo';
 import LinearGradient from 'react-native-linear-gradient';
 import MaterialIcons from '@react-native-vector-icons/material-icons';
-import {useRequest} from '../../hooks/useRequest';
-import {useSelector} from 'react-redux';
-import {createSpotifyAPI} from '../../utils/axios/axiosInstance';
+import { useRequest } from '../../hooks/useRequest';
+import { useSelector } from 'react-redux';
+import { createSpotifyAPI } from '../../utils/axios/axiosInstance';
 import LibraryCard from '../../components/Cards/LibraryCard';
 import TextCmp from '../../components/Styled/TextCmp';
 
 const Library = () => {
-  const {requestHandler, isLoading} = useRequest();
+  const { requestHandler, isLoading } = useRequest();
   const accessToken = useSelector(state => state.auth.accessToken);
   const refreshToken = useSelector(state => state.auth.refreshToken);
 
@@ -31,15 +31,16 @@ const Library = () => {
   const [albums, setAlbums] = useState([]);
   const [artists, setArtists] = useState([]);
   const [results, setResults] = useState([]);
+  const playingObj = useSelector(state => state.player.playingObj);
 
   const [tab, setTab] = useState([]);
 
-  const Tab = ({title}) => {
+  const Tab = ({ title }) => {
     const isSelected = tab.includes(title);
 
     return (
       <TouchableOpacity
-        style={[s.tab, isSelected ? {backgroundColor: Colors.green300} : {}]}
+        style={[s.tab, isSelected ? { backgroundColor: Colors.green300 } : {}]}
         onPress={() => {
           setTab(currTab =>
             isSelected ? currTab.filter(t => t !== title) : [...currTab, title],
@@ -103,7 +104,7 @@ const Library = () => {
   }, [albums, playlists]);
 
   return (
-    <View style={s.container}>
+    <View style={[s.container, { paddingBottom: playingObj?.id && verticalScale(60) }]}>
       <View style={s.tabContainer}>
         {playlists.length !== 0 && <Tab title="Playlists" />}
         {artists.length !== 0 && <Tab title="Artists" />}
@@ -138,7 +139,7 @@ const Library = () => {
           keyExtractor={(item, index) =>
             item.item?.id || `${item.type}-${index}`
           }
-          renderItem={({item}) => <LibraryCard item={item} />}
+          renderItem={({ item }) => <LibraryCard item={item} />}
           ListHeaderComponent={() => {
             return (
               <>
@@ -221,7 +222,6 @@ const s = StyleSheet.create({
   container: {
     flex: 1,
     paddingTop: verticalScale(20),
-    paddingBottom: verticalScale(60),
   },
   tabContainer: {
     flexDirection: 'row',

@@ -29,8 +29,9 @@ const Home = ({ navigation }) => {
   const { requestHandler, isLoading } = useRequest();
   const accessToken = useSelector(state => state.auth.accessToken);
   const refreshToken = useSelector(state => state.auth.refreshToken);
+  const playingObj = useSelector(state => state.player.playingObj);
 
-  useEffect(() => {
+useEffect(() => {
     if (!accessToken) return;
 
     const spotifyAPI = createSpotifyAPI(accessToken, refreshToken);
@@ -151,7 +152,7 @@ const Home = ({ navigation }) => {
               style={{
                 flexGrow: 1,
                 paddingTop: verticalScale(20),
-                paddingBottom: verticalScale(60),
+                paddingBottom: playingObj?.id && verticalScale(60),
               }}>
               <FlatList
                 showsHorizontalScrollIndicator={false}

@@ -1,20 +1,16 @@
-import {createSlice} from '@reduxjs/toolkit';
+import { createSlice } from '@reduxjs/toolkit';
 
 const playerSlice = createSlice({
   name: 'player',
   initialState: {
-    currentTrack: null,
     playingObj: null,
     recentSearches: [],
+    isShuffled: false,
   },
   reducers: {
-    setCurrentTrack: (state, action) => {
-      state.currentTrack = action.payload;
-    },
     setPlayingObj: (state, action) => {
       state.playingObj = action.payload;
     },
-
     addRecentSearch: (state, action) => {
       const query = action.payload?.trim();
       if (!query) return;
@@ -30,15 +26,18 @@ const playerSlice = createSlice({
     clearRecentSearches: state => {
       state.recentSearches = [];
     },
+    setIsShuffled: (state, action) => {
+      state.isShuffled = action.payload;
+    },
   },
 });
 
 export const {
-  setCurrentTrack,
   setPlayingObj,
   addRecentSearch,
   removeRecentSearch,
   clearRecentSearches,
+  setIsShuffled
 } = playerSlice.actions;
 
 export default playerSlice.reducer;

@@ -24,7 +24,10 @@ const CurrentlyPlaying = ({ style }) => {
   const playbackState = usePlaybackState().state;
   const isPlaying = playbackState === State.Playing;
 
+  useEffect(() => {
+    console.log('playing obj', playingObj);
 
+  }, [playingObj])
 
   const handlePlayPause = async () => {
     await togglePlayPause();

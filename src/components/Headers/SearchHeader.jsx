@@ -1,7 +1,7 @@
-import {StyleSheet, View} from 'react-native';
+import { StatusBar, StyleSheet, View } from 'react-native';
 import React from 'react';
 import SimpleLineIcons from '@react-native-vector-icons/simple-line-icons';
-import {moderateScale, scale, verticalScale} from 'react-native-size-matters';
+import { moderateScale, scale, verticalScale } from 'react-native-size-matters';
 import TextCmp from '../Styled/TextCmp';
 
 const SearchHeader = () => {
@@ -25,7 +25,7 @@ export default SearchHeader;
 
 const s = StyleSheet.create({
   main: {
-    paddingTop: verticalScale(80),
+    paddingTop: StatusBar.currentHeight + verticalScale(20),
     paddingHorizontal: scale(20),
     flexDirection: 'row',
     justifyContent: 'space-between',

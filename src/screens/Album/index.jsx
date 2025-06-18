@@ -6,22 +6,22 @@ import {
   FlatList,
   TouchableOpacity,
 } from 'react-native';
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import LinearGradient from 'react-native-linear-gradient';
 import SimpleLineIcons from '@react-native-vector-icons/simple-line-icons';
 import Entypo from '@react-native-vector-icons/entypo';
-import {moderateScale, scale, verticalScale} from 'react-native-size-matters';
+import { moderateScale, scale, verticalScale } from 'react-native-size-matters';
 import Fonts from '../../utils/constants/fonts';
-import {useRequest} from '../../hooks/useRequest';
-import {useDispatch, useSelector} from 'react-redux';
-import {createSpotifyAPI} from '../../utils/axios/axiosInstance';
+import { useRequest } from '../../hooks/useRequest';
+import { useDispatch, useSelector } from 'react-redux';
+import { createSpotifyAPI } from '../../utils/axios/axiosInstance';
 import Loading from '../../components/Loading';
 import Colors from '../../utils/constants/colors';
 import FontAwesome from '@react-native-vector-icons/fontawesome';
 import Foundation from '@react-native-vector-icons/foundation';
 import TrackCard from '../../components/Cards/TrackCard';
-import {State, usePlaybackState} from 'react-native-track-player';
-import {setPlayingObj} from '../../store/playerSlice';
+import { State, usePlaybackState } from 'react-native-track-player';
+import { setPlayingObj } from '../../store/playerSlice';
 import {
   getCurrentTrack,
   loadAndPlayAlbum,
@@ -31,11 +31,11 @@ import {
 import TextCmp from '../../components/Styled/TextCmp';
 import ImageCmp from '../../components/Styled/ImageCmp';
 
-const Album = ({route, navigation}) => {
+const Album = ({ route, navigation }) => {
   const dispatch = useDispatch();
 
   const albumId = route?.params.albumId;
-  const {requestHandler, isLoading} = useRequest();
+  const { requestHandler, isLoading } = useRequest();
   const accessToken = useSelector(state => state.auth.accessToken);
   const refreshToken = useSelector(state => state.auth.refreshToken);
   const playingObj = useSelector(state => state.player.playingObj);
@@ -84,7 +84,7 @@ const Album = ({route, navigation}) => {
     <LinearGradient
       colors={['#962419', '#661710', '#430E09']}
       locations={[0, 0.45, 1]}
-      style={s.container}>
+      style={[s.container, { paddingBottom: playingObj ? verticalScale(60) : verticalScale(20) }]}>
       {isLoading || !album || !artist ? (
         <Loading />
       ) : (
@@ -111,7 +111,7 @@ const Album = ({route, navigation}) => {
                             {album?.name || 'Loading...'}
                           </TextCmp>
 
-                          <View style={[s.row, {marginTop: moderateScale(10)}]}>
+                          <View style={[s.row, { marginTop: moderateScale(10) }]}>
                             <ImageCmp
                               source={artist?.images?.[0].url}
                               size={30}
@@ -127,7 +127,7 @@ const Album = ({route, navigation}) => {
                               </TextCmp>
                             </View>
                           </View>
-                          <View style={{marginTop: verticalScale(10)}}>
+                          <View style={{ marginTop: verticalScale(10) }}>
                             <TextCmp color={Colors.text400}>
                               Album
                               <Entypo
@@ -186,7 +186,7 @@ const Album = ({route, navigation}) => {
                     </View>
                   </>
                 }
-                renderItem={({item, index}) => (
+                renderItem={({ item, index }) => (
                   <TouchableOpacity onPress={() => handleTrackSelect(index)}>
                     <TrackCard item={item} />
                   </TouchableOpacity>
@@ -205,7 +205,7 @@ export default Album;
 const s = StyleSheet.create({
   container: {
     flex: 1,
-    paddingVertical: verticalScale(60),
+    paddingTop: verticalScale(60),
     paddingHorizontal: scale(10),
   },
   main: {

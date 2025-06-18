@@ -1,9 +1,9 @@
-import {StyleSheet, Text, View, Image} from 'react-native';
+import { StyleSheet, Text, View, Image, StatusBar } from 'react-native';
 import React from 'react';
 import Fonts from '../../utils/constants/fonts';
 import Entypo from '@react-native-vector-icons/entypo';
-import {moderateScale, scale} from 'react-native-size-matters';
-import {useSelector} from 'react-redux';
+import { moderateScale, scale, verticalScale } from 'react-native-size-matters';
+import { useSelector } from 'react-redux';
 import TextCmp from '../Styled/TextCmp';
 import ImageCmp from '../Styled/ImageCmp';
 
@@ -42,7 +42,7 @@ export default LibraryHeader;
 
 const s = StyleSheet.create({
   main: {
-    paddingTop: moderateScale(80),
+    paddingTop: StatusBar.currentHeight + verticalScale(20),
     paddingHorizontal: moderateScale(15),
     flexDirection: 'row',
     justifyContent: 'space-between',

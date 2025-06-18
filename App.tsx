@@ -11,14 +11,14 @@ import { setupPlayer } from './src/utils/helpers/player';
 
 
 const App = () => {
-  const [isReady, setIsReady] = useState(false);
+
 
   useEffect(() => {
     const init = async () => {
       console.log('App initializing...');
-      await setupPlayer();
-      console.log('TrackPlayer init success:');
-      setIsReady(true);
+      const ok = await setupPlayer();
+      console.log('TrackPlayer init success:', ok);
+
       await BootSplash.hide({ fade: true });
       console.log('BootSplash has been hidden successfully');
     };
@@ -26,8 +26,6 @@ const App = () => {
     init();
   }, []);
 
-
-  if (!isReady) return <Loading />;
   return (
     <>
       <StatusBar barStyle={'light-content'} />

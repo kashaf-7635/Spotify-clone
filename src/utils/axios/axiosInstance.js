@@ -1,4 +1,4 @@
-import { refresh, revoke } from 'react-native-app-auth';
+import { refresh } from 'react-native-app-auth';
 import axios from 'axios';
 import { authConfig } from '../auth/authConfig';
 import { Alert } from 'react-native';

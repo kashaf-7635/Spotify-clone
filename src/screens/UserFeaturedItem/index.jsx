@@ -6,37 +6,39 @@ import {
   FlatList,
   TouchableOpacity,
 } from 'react-native';
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import LinearGradient from 'react-native-linear-gradient';
 import SimpleLineIcons from '@react-native-vector-icons/simple-line-icons';
 import Entypo from '@react-native-vector-icons/entypo';
-import {moderateScale, scale, verticalScale} from 'react-native-size-matters';
+import { moderateScale, scale, verticalScale } from 'react-native-size-matters';
 import Fonts from '../../utils/constants/fonts';
-import {useRequest} from '../../hooks/useRequest';
-import {useDispatch, useSelector} from 'react-redux';
-import {createSpotifyAPI} from '../../utils/axios/axiosInstance';
+import { useRequest } from '../../hooks/useRequest';
+import { useDispatch, useSelector } from 'react-redux';
+import { createSpotifyAPI } from '../../utils/axios/axiosInstance';
 import Loading from '../../components/Loading';
 import Colors from '../../utils/constants/colors';
 import FontAwesome from '@react-native-vector-icons/fontawesome';
 import Foundation from '@react-native-vector-icons/foundation';
 import TrackCard from '../../components/Cards/TrackCard';
 import LibraryCard from '../../components/Cards/LibraryCard';
-import {usePlaybackState} from 'react-native-track-player';
-import {State} from 'react-native-gesture-handler';
+import TrackPlayer, { State, usePlaybackState } from 'react-native-track-player';
 import TextCmp from '../../components/Styled/TextCmp';
 import ImageCmp from '../../components/Styled/ImageCmp';
+import { loadAndPlayAlbum, loadAndPlayPlaylist, playAlbumFromIndex, togglePlayPause } from '../../utils/helpers/player';
+import Track from '../../models/track';
 
-const UserFeaturedItem = ({navigation, route}) => {
-  const dispatch = useDispatch();
+const UserFeaturedItem = ({ navigation, route }) => {
   const type = route?.params?.type;
   const playbackState = usePlaybackState().state;
   const isPlaying = playbackState === State.Playing;
-  const {requestHandler, isLoading} = useRequest();
+  const { requestHandler, isLoading } = useRequest();
   const accessToken = useSelector(state => state.auth.accessToken);
   const refreshToken = useSelector(state => state.auth.refreshToken);
   const userData = useSelector(state => state.auth.userData);
-  const [topTracks, setTopTracks] = useState([]);
   const [topArtists, setTopArtists] = useState([]);
+
+  const [topTrackAlbum, setTopTrackAlbum] = useState({});
+  const playingObj = useSelector(state => state.player.playingObj);
 
   useEffect(() => {
     if (!accessToken) return;
@@ -47,7 +49,11 @@ const UserFeaturedItem = ({navigation, route}) => {
       requestHandler({
         requestFn: () => spotifyAPI.get(`/me/top/tracks`),
         onSuccess: async res => {
-          setTopTracks(res.data.items);
+          const album = {
+            id: 'top-songs',
+            tracks: { items: res.data.items }
+          }
+          setTopTrackAlbum(album)
         },
         onError: err => {
           console.log(err.response?.data || err.message);
@@ -61,41 +67,8 @@ const UserFeaturedItem = ({navigation, route}) => {
           spotifyAPI.get(`/me/top/artists?limit=10&time_range=short_term`),
         onSuccess: async res => {
           console.log(res.data, 'top artists data');
+          setTopArtists(res.data.items)
 
-          if (res.data.items.length !== 0) {
-            setTopArtists(res.data.items);
-          } else {
-            // Fallback: get top tracks
-            requestHandler({
-              requestFn: () => spotifyAPI.get(`/me/top/tracks?limit=50`),
-              onSuccess: async res => {
-                const items = res.data.items;
-
-                // Collect all artist IDs from tracks
-                const allArtists = items.flatMap(track => track.artists);
-                const uniqueMap = {};
-                allArtists.forEach(artist => {
-                  if (artist && artist.id && !uniqueMap[artist.id]) {
-                    uniqueMap[artist.id] = true;
-                  }
-                });
-
-                const artistIds = Object.keys(uniqueMap).slice(0, 10);
-                if (artistIds.length === 0) return;
-
-                // Get full artist details
-                const artistDetailsRes = await spotifyAPI.get(
-                  `/artists?ids=${artistIds.join(',')}`,
-                );
-                const artistDetails = artistDetailsRes.data.artists;
-
-                setTopArtists(artistDetails);
-              },
-              onError: err => {
-                console.log(err.response?.data || err.message);
-              },
-            });
-          }
         },
         onError: err => {
           console.log(err.response?.data || err.message);
@@ -104,11 +77,25 @@ const UserFeaturedItem = ({navigation, route}) => {
     }
   }, [accessToken]);
 
+  const handlePlayPause = async () => {
+    const isSameAlbum = playingObj?.albumId === topTrackAlbum?.id;
+
+    if (!isSameAlbum || !playingObj) {
+      await loadAndPlayAlbum(topTrackAlbum);
+    } else {
+      await togglePlayPause();
+    }
+  };
+
+  const handleTrackSelect = async index => {
+    await playAlbumFromIndex(topTrackAlbum, index);
+  };
+
   return (
     <LinearGradient
       colors={['#962419', '#661710', '#430E09']}
       locations={[0, 0.45, 1]}
-      style={s.container}>
+      style={[s.container, { paddingBottom: playingObj ? verticalScale(60) : 0 }]}>
       {isLoading ? (
         <Loading />
       ) : (
@@ -125,7 +112,7 @@ const UserFeaturedItem = ({navigation, route}) => {
             <View style={s.inner}>
               <FlatList
                 showsVerticalScrollIndicator={false}
-                data={type === 'tracks' ? topTracks : topArtists}
+                data={type === 'tracks' ? topTrackAlbum?.tracks?.items : topArtists}
                 ListHeaderComponent={
                   <>
                     <View style={s.imageView}>
@@ -156,15 +143,13 @@ const UserFeaturedItem = ({navigation, route}) => {
                               />
                             </View>
                             <TextCmp weight="bold" size={20}>
-                              {`${
-                                userData?.display_name?.split(' ')[0]
-                              }'s Top ${
-                                type === 'tracks' ? 'Songs' : 'Artists'
-                              }`}{' '}
+                              {`${userData?.display_name?.split(' ')[0]
+                                }'s Top ${type === 'tracks' ? 'Songs' : 'Artists'
+                                }`}{' '}
                             </TextCmp>
                           </View>
 
-                          <View style={{marginTop: verticalScale(10)}}>
+                          <View style={{ marginTop: verticalScale(10) }}>
                             <TextCmp color={Colors.text400} size={15}>
                               Top {type === 'tracks' ? 'Songs' : 'Artists'}
                               <Entypo
@@ -206,9 +191,14 @@ const UserFeaturedItem = ({navigation, route}) => {
                         </View>
                         <View style={s.playPauseView}>
                           <TouchableOpacity
+                            onPress={handlePlayPause}
                             style={[s.iconCircle, s.iconCircleBig]}>
                             <Foundation
-                              name={isPlaying ? 'pause' : 'play'}
+                              name={
+                                isPlaying && playingObj?.albumId === topTrackAlbum.id
+                                  ? 'pause'
+                                  : 'play'
+                              }
                               color="#000000"
                               size={moderateScale(35)}
                             />
@@ -218,11 +208,13 @@ const UserFeaturedItem = ({navigation, route}) => {
                     </View>
                   </>
                 }
-                renderItem={({item}) => {
+                renderItem={({ item, index }) => {
                   return (
                     <>
                       {type === 'tracks' ? (
-                        <TrackCard item={item} />
+                        <TouchableOpacity onPress={() => handleTrackSelect(index)}>
+                          <TrackCard item={item} />
+                        </TouchableOpacity>
                       ) : (
                         <LibraryCard item={item} />
                       )}
@@ -243,8 +235,8 @@ export default UserFeaturedItem;
 const s = StyleSheet.create({
   container: {
     flex: 1,
-    paddingVertical: moderateScale(60),
     paddingHorizontal: moderateScale(10),
+    paddingTop: verticalScale(60)
   },
   main: {
     flex: 1,

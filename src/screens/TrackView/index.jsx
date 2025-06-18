@@ -6,7 +6,7 @@ import {
   ScrollView,
   TouchableOpacity,
 } from 'react-native';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import LinearGradient from 'react-native-linear-gradient';
 import SimpleLineIcons from '@react-native-vector-icons/simple-line-icons';
 import Entypo from '@react-native-vector-icons/entypo';
@@ -28,13 +28,16 @@ import { getCurrentTrack, togglePlayPause } from '../../utils/helpers/player';
 import TextCmp from '../../components/Styled/TextCmp';
 import ImageCmp from '../../components/Styled/ImageCmp';
 import { useNavigation } from '@react-navigation/native';
+import { setIsShuffled } from '../../store/playerSlice';
 
 const TrackView = () => {
+  const dispatch = useDispatch()
   const navigation = useNavigation()
   const playingObj = useSelector(state => state.player.playingObj);
+  const isShuffled = useSelector(state => state.player.isShuffled);
   const { position, duration } = useProgress(250);
   const [repeatMode, setRepeatMode] = useState(RepeatMode.Off);
-
+  const originalQueueRef = useRef([]);
 
   const playbackState = usePlaybackState().state;
   const isPlaying = playbackState === State.Playing;
@@ -44,24 +47,32 @@ const TrackView = () => {
   const [album, setAlbum] = useState(null);
   const [hasNext, setHasNext] = useState(false);
   const [hasPrevious, setHasPrevious] = useState(false);
+  const [canShuffle, setCanShuffle] = useState(false);
+
 
   useEffect(() => {
     const checkTrackAvailability = async () => {
       const queue = await TrackPlayer.getQueue();
-      const current = await getCurrentTrack()
+      const current = await getCurrentTrack();
 
       const currentIndex = queue.findIndex(track => track.id === current.id);
-
       setHasNext(currentIndex < queue.length - 1);
       setHasPrevious(currentIndex > 0);
+      setCanShuffle(queue.length > 1);
     };
+
     checkTrackAvailability();
-    const listener = TrackPlayer.addEventListener(Event.PlaybackActiveTrackChanged, checkTrackAvailability);
+
+    const listener = TrackPlayer.addEventListener(
+      Event.PlaybackActiveTrackChanged,
+      checkTrackAvailability
+    );
 
     return () => {
       listener.remove();
     };
   }, []);
+
 
   const handleNext = async () => {
     if (hasNext) {
@@ -113,8 +124,6 @@ const TrackView = () => {
 
     if (repeatMode === RepeatMode.Off) {
       newMode = RepeatMode.Track;
-    } else if (repeatMode === RepeatMode.Track) {
-      newMode = RepeatMode.Queue;
     } else {
       newMode = RepeatMode.Off;
     }
@@ -122,6 +131,52 @@ const TrackView = () => {
     await TrackPlayer.setRepeatMode(newMode);
     setRepeatMode(newMode);
   };
+
+  const toggleShuffle = async () => {
+    const queue = await TrackPlayer.getQueue();
+
+    if (queue.length <= 1) {
+      console.warn("Shuffle not applicable for 1 or fewer tracks");
+      return;
+    }
+
+    const currentIndex = await TrackPlayer.getActiveTrackIndex();
+
+    if (!isShuffled) {
+      // Store original queue
+      originalQueueRef.current = queue;
+
+      // Shuffle queue
+      const shuffledQueue = [...queue].sort(() => Math.random() - 0.5);
+
+      await TrackPlayer.reset();
+      await TrackPlayer.add(shuffledQueue);
+      if (currentIndex !== null && currentIndex < shuffledQueue.length) {
+        await TrackPlayer.skip(currentIndex);
+      }
+      await TrackPlayer.play();
+      dispatch(setIsShuffled(true))
+    } else {
+      const originalQueue = originalQueueRef.current;
+
+      if (originalQueue.length === 0) {
+        console.warn("Original queue not available");
+        return;
+      }
+
+      await TrackPlayer.reset();
+      await TrackPlayer.add(originalQueue);
+      if (currentIndex !== null && currentIndex < originalQueue.length) {
+        await TrackPlayer.skip(currentIndex);
+      }
+      await TrackPlayer.play();
+      dispatch(setIsShuffled(false))
+
+    }
+  };
+
+
+
 
 
   return (
@@ -211,13 +266,15 @@ const TrackView = () => {
               </View>
 
               <View style={s.actions}>
-                <View style={s.left}>
+
+                <TouchableOpacity style={s.left} onPress={toggleShuffle} disabled={!canShuffle}>
                   <Entypo
                     name="shuffle"
-                    color="#FFFFFF"
+                    color={!canShuffle ? "#666666" : (isShuffled ? Colors.green300 : "#FFFFFF")}
                     size={moderateScale(30)}
                   />
-                </View>
+                </TouchableOpacity>
+
 
                 <View style={s.mid}>
                   <TouchableOpacity disabled={!hasPrevious} onPress={handlePrevious}>

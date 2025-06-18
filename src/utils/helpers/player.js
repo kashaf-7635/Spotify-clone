@@ -1,12 +1,41 @@
-import TrackPlayer, { State } from 'react-native-track-player';
+import TrackPlayer, { AppKilledPlaybackBehavior, Capability, State } from 'react-native-track-player';
 import Track from '../../models/track';
 
-export const setupPlayer = async () => {
-  const isSetup = await TrackPlayer.getActiveTrackIndex().catch(() => null);
-  if (isSetup === null) {
-    await TrackPlayer.setupPlayer();
+export async function setupPlayer() {
+  let isSetup = false;
+  try {
+    await TrackPlayer.getActiveTrack();
+    isSetup = true;
   }
-};
+  catch {
+    await TrackPlayer.setupPlayer();
+    await TrackPlayer.updateOptions({
+      android: {
+        appKilledPlaybackBehavior:
+          AppKilledPlaybackBehavior.StopPlaybackAndRemoveNotification,
+      },
+      capabilities: [
+        Capability.Play,
+        Capability.Pause,
+        Capability.SkipToNext,
+        Capability.SkipToPrevious,
+        Capability.SeekTo,
+      ],
+      compactCapabilities: [
+        Capability.Play,
+        Capability.Pause,
+        Capability.SkipToNext,
+      ],
+      progressUpdateEventInterval: 2,
+    });
+
+    isSetup = true;
+  }
+  finally {
+    return isSetup;
+  }
+}
+
 
 export const loadAndPlayAlbum = async album => {
   const formattedTracks = album.tracks.items.map(item => {
@@ -14,7 +43,7 @@ export const loadAndPlayAlbum = async album => {
       item.id,
       item.name,
       item?.artists[0]?.name,
-      album?.images?.[0]?.url,
+      album?.images?.[0]?.url || item?.album?.images?.[0]?.url,
       item.duration_ms ? item.duration_ms / 1000 : 30,
       album?.id,
 
@@ -33,7 +62,7 @@ export const loadAndPlayPlaylist = async playlist => {
       item.track.id,
       item.track.name,
       item.track?.artists[0]?.name,
-      playlist?.images?.[0]?.url,
+      playlist?.images?.[0]?.url || item?.album?.images?.[0]?.url,
       item.track?.duration_ms ? item.track?.duration_ms / 1000 : 30,
       playlist?.id,
 
@@ -77,7 +106,7 @@ export const playAlbumFromIndex = async (album, startIndex = 0) => {
         item.id,
         item.name,
         item.artists?.[0]?.name,
-        album.images?.[0]?.url,
+        album?.images?.[0]?.url || item?.album?.images?.[0]?.url,
         item.duration_ms ? item.duration_ms / 1000 : 30,
         album.id,
       ),
