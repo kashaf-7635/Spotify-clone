@@ -48,6 +48,23 @@ const TrackView = () => {
   const [hasNext, setHasNext] = useState(false);
   const [hasPrevious, setHasPrevious] = useState(false);
   const [canShuffle, setCanShuffle] = useState(false);
+  const [isLiked, setIsLiked] = useState(false)
+  useEffect(() => {
+    if (!playingObj) return;
+
+    const spotifyAPI = createSpotifyAPI(accessToken, refreshToken);
+    requestHandler({
+      requestFn: () => spotifyAPI.get(`/me/tracks/contains?ids=${playingObj?.id}`),
+      onSuccess: res => {
+        setIsLiked(res?.data?.[0]);
+      },
+      onError: err => {
+        console.log(err.response?.data || err.message);
+      },
+    });
+  }, [playingObj?.id, accessToken, refreshToken]);
+
+
 
 
   useEffect(() => {
@@ -93,6 +110,8 @@ const TrackView = () => {
     requestHandler({
       requestFn: () => spotifyAPI.get(`/albums/${playingObj?.albumId}`),
       onSuccess: async res => {
+
+
         setAlbum(res.data);
       },
       onError: err => {
@@ -175,8 +194,42 @@ const TrackView = () => {
     }
   };
 
+  const handleAddToLikedSongs = (trackId) => {
+    const spotifyAPI = createSpotifyAPI(accessToken, refreshToken);
+    requestHandler({
+      requestFn: () => spotifyAPI.put(`/me/tracks`, { ids: [`${trackId}`] }),
+      onSuccess: async res => {
+        console.log(res.data);
 
+      },
+      onError: err => {
+        console.log(err.response?.data || err.message);
+      },
+    });
+  }
 
+  const handleRemoveFromLikedSongs = (trackId) => {
+    const spotifyAPI = createSpotifyAPI(accessToken, refreshToken);
+    requestHandler({
+      requestFn: () => spotifyAPI.delete(`/me/tracks?ids=${trackId}`),
+      onSuccess: async res => {
+        console.log(res.data);
+
+      },
+      onError: err => {
+        console.log(err.response?.data || err.message);
+      },
+    });
+  }
+const handleFav = async (trackId) => {
+  if (isLiked) {
+    await handleRemoveFromLikedSongs(trackId);
+    setIsLiked(false); 
+  } else {
+    await handleAddToLikedSongs(trackId);
+    setIsLiked(true); 
+  }
+};
 
 
   return (
@@ -234,13 +287,13 @@ const TrackView = () => {
                     </TextCmp>
                   </View>
                 </View>
-                <View style={s.iconView}>
+                <TouchableOpacity style={s.iconView} onPress={() => handleFav(playingObj.id)}>
                   <FontAwesome
-                    name="heart-o"
+                    name={`${isLiked ? 'heart' : 'heart-o'}`}
                     color={'#CBB7B5'}
                     size={moderateScale(30)}
                   />
-                </View>
+                </TouchableOpacity>
               </View>
 
               <View style={s.slider}>

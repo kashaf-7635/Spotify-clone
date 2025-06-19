@@ -53,8 +53,10 @@ const Playlist = ({ route, navigation }) => {
   }, [accessToken, route]);
 
   const handlePlayPause = async () => {
-    const isSamePlaylist = playingObj?.albumId === playlist?.id;
+    const isSamePlaylist = playingObj?.parentId === playlist?.id;
     if (!isSamePlaylist || !playingObj) {
+
+
       loadAndPlayPlaylist(playlist);
     } else {
       await togglePlayPause();
@@ -155,7 +157,7 @@ const Playlist = ({ route, navigation }) => {
                             style={[s.iconCircle, s.iconCircleBig]}>
                             <Foundation
                               name={
-                                isPlaying && playingObj?.albumId === playlist.id
+                                isPlaying && playingObj?.parentId === playlist.id
                                   ? 'pause'
                                   : 'play'
                               }

@@ -6,6 +6,7 @@ const playerSlice = createSlice({
     playingObj: null,
     recentSearches: [],
     isShuffled: false,
+    likedSongAlbum: null,
   },
   reducers: {
     setPlayingObj: (state, action) => {
@@ -22,12 +23,14 @@ const playerSlice = createSlice({
       const query = action.payload;
       state.recentSearches = state.recentSearches.filter(q => q !== query);
     },
-
     clearRecentSearches: state => {
       state.recentSearches = [];
     },
     setIsShuffled: (state, action) => {
       state.isShuffled = action.payload;
+    },
+    setLikedSongAlbum: (state, action) => {
+      state.likedSongAlbum = action.payload;
     },
   },
 });
@@ -37,7 +40,8 @@ export const {
   addRecentSearch,
   removeRecentSearch,
   clearRecentSearches,
-  setIsShuffled
+  setIsShuffled,
+  setLikedSongAlbum
 } = playerSlice.actions;
 
 export default playerSlice.reducer;

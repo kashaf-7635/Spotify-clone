@@ -17,21 +17,27 @@ import Entypo from '@react-native-vector-icons/entypo';
 import LinearGradient from 'react-native-linear-gradient';
 import MaterialIcons from '@react-native-vector-icons/material-icons';
 import { useRequest } from '../../hooks/useRequest';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { createSpotifyAPI } from '../../utils/axios/axiosInstance';
 import LibraryCard from '../../components/Cards/LibraryCard';
 import TextCmp from '../../components/Styled/TextCmp';
+import { setLikedSongAlbum } from '../../store/playerSlice';
+import { handleAddToLikedSongs } from '../TrackView';
+import { useIsFocused } from '@react-navigation/native';
 
-const Library = () => {
+const Library = ({ navigation }) => {
+  const dispatch = useDispatch();
   const { requestHandler, isLoading } = useRequest();
   const accessToken = useSelector(state => state.auth.accessToken);
   const refreshToken = useSelector(state => state.auth.refreshToken);
-
+  const isFocused = useIsFocused();
   const [playlists, setPlaylists] = useState([]);
   const [albums, setAlbums] = useState([]);
   const [artists, setArtists] = useState([]);
   const [results, setResults] = useState([]);
   const playingObj = useSelector(state => state.player.playingObj);
+  const likedSongAlbum = useSelector(state => state.player.likedSongAlbum);
+
 
   const [tab, setTab] = useState([]);
 
@@ -56,6 +62,20 @@ const Library = () => {
 
     const spotifyAPI = createSpotifyAPI(accessToken, refreshToken);
 
+    requestHandler({
+      requestFn: () => spotifyAPI.get(`/me/tracks`),
+      onSuccess: async res => {
+        const album = {
+          id: 'liked-songs',
+          tracks: { items: res.data.items }
+        }
+        dispatch(setLikedSongAlbum(album))
+
+      },
+      onError: err => {
+        console.log(err.response?.data || err.message);
+      },
+    });
     requestHandler({
       requestFn: () => spotifyAPI.get(`/me/playlists`),
       onSuccess: async res => {
@@ -88,20 +108,72 @@ const Library = () => {
   }, [accessToken, refreshToken]);
 
   useEffect(() => {
-    const extractItems = () => {
-      const allPlaylists = [...playlists];
-      const allAlbums = albums.map(album => album.album);
-      const allArtists = [...artists];
-      return [...allPlaylists, ...allAlbums, ...allArtists];
-    };
+    if (!accessToken) return;
 
-    const combined = extractItems();
-    for (let i = combined.length - 1; i > 0; i--) {
+    const spotifyAPI = createSpotifyAPI(accessToken, refreshToken);
+
+    requestHandler({
+      requestFn: () => spotifyAPI.get(`/me/tracks`),
+      onSuccess: async res => {
+        const album = {
+          id: 'liked-songs',
+          tracks: { items: res.data.items }
+        }
+        dispatch(setLikedSongAlbum(album))
+
+      },
+      onError: err => {
+        console.log(err.response?.data || err.message);
+      },
+    });
+
+  }, [accessToken, refreshToken, isFocused]);
+
+  useEffect(() => {
+    if (!accessToken) return;
+
+    const spotifyAPI = createSpotifyAPI(accessToken, refreshToken);
+
+    requestHandler({
+      requestFn: () => spotifyAPI.get(`/me/tracks`),
+      onSuccess: async res => {
+        const album = {
+          id: 'liked-songs',
+          tracks: { items: res.data.items }
+        }
+        dispatch(setLikedSongAlbum(album))
+
+      },
+      onError: err => {
+        console.log(err.response?.data || err.message);
+      },
+    });
+
+  }, [accessToken, refreshToken, handleAddToLikedSongs]);
+
+  const extractItems = () => {
+    const allPlaylists = playlists.map(item => ({ ...item, type: 'Playlists' }));
+    const allAlbums = albums.map(album => ({ ...album.album, type: 'Albums' }));
+    const allArtists = artists.map(artist => ({ ...artist, type: 'Artists' }));
+    return [...allPlaylists, ...allAlbums, ...allArtists];
+  };
+
+  useEffect(() => {
+    const allItems = extractItems();
+
+    for (let i = allItems.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
-      [combined[i], combined[j]] = [combined[j], combined[i]];
+      [allItems[i], allItems[j]] = [allItems[j], allItems[i]];
     }
-    setResults(combined);
-  }, [albums, playlists]);
+
+    if (tab.length === 0) {
+      setResults(allItems);
+    } else {
+      const filtered = allItems.filter(item => tab.includes(item.type));
+      setResults(filtered);
+    }
+  }, [albums, playlists, artists, tab]);
+
 
   return (
     <View style={[s.container, { paddingBottom: playingObj?.id && verticalScale(60) }]}>
@@ -143,42 +215,45 @@ const Library = () => {
           ListHeaderComponent={() => {
             return (
               <>
-                <View style={s.card}>
-                  <LinearGradient
-                    locations={[0.12, 0.56, 0.99]}
-                    colors={['#4A39EA', '#868AE1', '#B9D4DB']}
-                    style={s.likedSongs}>
-                    <FontAwesome
-                      name="heart"
-                      color={'white'}
-                      size={moderateScale(25)}
-                    />
-                  </LinearGradient>
-                  <View style={s.itemText}>
-                    <View style={s.playlistTitleHead}>
-                      <TextCmp weight="bold" size={16}>
-                        Liked Songs
-                      </TextCmp>
-                    </View>
-
-                    <View style={s.row}>
-                      <MaterialIcons
-                        name="push-pin"
-                        color={Colors.green300}
-                        size={15}
+                {likedSongAlbum?.tracks?.items?.length !== 0 &&
+                  <TouchableOpacity style={s.card} onPress={() => navigation.navigate('LikedSongs')}>
+                    <LinearGradient
+                      locations={[0.12, 0.56, 0.99]}
+                      colors={['#4A39EA', '#868AE1', '#B9D4DB']}
+                      style={s.likedSongs}>
+                      <FontAwesome
+                        name="heart"
+                        color={'white'}
+                        size={moderateScale(25)}
                       />
-                      <TextCmp size={15} color={Colors.text400}>
-                        Playlist
-                        <Entypo
-                          name="dot-single"
-                          color={'white'}
-                          size={moderateScale(15)}
+                    </LinearGradient>
+                    <View style={s.itemText}>
+                      <View style={s.playlistTitleHead}>
+                        <TextCmp weight="bold" size={16}>
+                          Liked Songs
+                        </TextCmp>
+                      </View>
+
+                      <View style={s.row}>
+                        <MaterialIcons
+                          name="push-pin"
+                          color={Colors.green300}
+                          size={15}
                         />
-                        58 Songs
-                      </TextCmp>
+                        <TextCmp size={15} color={Colors.text400}>
+                          Playlist
+                          <Entypo
+                            name="dot-single"
+                            color={'white'}
+                            size={moderateScale(15)}
+                          />
+                          {`${likedSongAlbum?.tracks?.items?.length} Song${likedSongAlbum?.tracks?.items?.length > 1 ? 's' : ''}`}
+                        </TextCmp>
+                      </View>
                     </View>
-                  </View>
-                </View>
+                  </TouchableOpacity>
+                }
+
 
                 <View style={s.card}>
                   <View style={[s.likedSongs, s.newEpi]}>

@@ -1,5 +1,5 @@
 class Track {
-  constructor(id, title, artist, artwork, duration, albumId) {
+  constructor(id, title, artist, artwork, duration, albumId, parentId) {
     this.id = id;
     this.url =
       'https://p.scdn.co/mp3-preview/e2e03acfd38d7cfa2baa924e0e9c7a80f9b49137?cid=8897482848704f2a8f8d7c79726a70d4';
@@ -8,6 +8,7 @@ class Track {
     this.artwork = artwork;
     this.duration = duration;
     this.albumId = albumId;
+    this.parentId = parentId;
   }
 }
 

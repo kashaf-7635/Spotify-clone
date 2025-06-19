@@ -1,6 +1,6 @@
-import {StyleSheet, Text, View} from 'react-native';
-import React, {useEffect} from 'react';
-import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
+import { StyleSheet, Text, View } from 'react-native';
+import React, { useEffect } from 'react';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import Home from '../screens/Home';
 import Search from '../screens/Search';
 import Library from '../screens/Library';
@@ -17,7 +17,8 @@ import Album from '../screens/Album';
 import Playlist from '../screens/Playlist';
 import Artist from '../screens/Artist';
 import UserFeaturedItem from '../screens/UserFeaturedItem';
-import {useSelector} from 'react-redux';
+import { useSelector } from 'react-redux';
+import LikedSongs from '../screens/LikedSongs';
 
 const Tab = createBottomTabNavigator();
 
@@ -29,10 +30,10 @@ const BottomTabs = () => {
   }, []);
 
   return (
-    <View style={{flex: 1}}>
+    <View style={{ flex: 1 }}>
       <Tab.Navigator
         screenOptions={{
-          sceneStyle: {backgroundColor: Colors.bg800},
+          sceneStyle: { backgroundColor: Colors.bg800 },
           tabBarStyle: {
             backgroundColor: Colors.bg800,
             borderTopWidth: 0,
@@ -50,7 +51,7 @@ const BottomTabs = () => {
           name="Home"
           component={Home}
           options={{
-            tabBarIcon: ({color, size}) => (
+            tabBarIcon: ({ color, size }) => (
               <Foundation name="home" color={color} size={size} />
             ),
             header: () => <HomeHeader />,
@@ -60,7 +61,7 @@ const BottomTabs = () => {
           name="Search"
           component={Search}
           options={{
-            tabBarIcon: ({color, size}) => (
+            tabBarIcon: ({ color, size }) => (
               <FontAwesome name="search" color={color} size={size} />
             ),
             header: () => <SearchHeader />,
@@ -71,7 +72,7 @@ const BottomTabs = () => {
           component={Library}
           options={{
             title: 'Your Library',
-            tabBarIcon: ({color, size}) => (
+            tabBarIcon: ({ color, size }) => (
               <FontAwesome6
                 name="lines-leaning"
                 color={color}
@@ -87,7 +88,7 @@ const BottomTabs = () => {
           component={Album}
           options={{
             tabBarButton: () => null,
-            tabBarItemStyle: {display: 'none'},
+            tabBarItemStyle: { display: 'none' },
             headerShown: false,
           }}
         />
@@ -96,7 +97,7 @@ const BottomTabs = () => {
           component={Playlist}
           options={{
             tabBarButton: () => null,
-            tabBarItemStyle: {display: 'none'},
+            tabBarItemStyle: { display: 'none' },
             headerShown: false,
           }}
         />
@@ -105,7 +106,7 @@ const BottomTabs = () => {
           component={Artist}
           options={{
             tabBarButton: () => null,
-            tabBarItemStyle: {display: 'none'},
+            tabBarItemStyle: { display: 'none' },
             headerShown: false,
           }}
         />
@@ -115,7 +116,16 @@ const BottomTabs = () => {
           component={UserFeaturedItem}
           options={{
             tabBarButton: () => null,
-            tabBarItemStyle: {display: 'none'},
+            tabBarItemStyle: { display: 'none' },
+            headerShown: false,
+          }}
+        />
+        <Tab.Screen
+          name="LikedSongs"
+          component={LikedSongs}
+          options={{
+            tabBarButton: () => null,
+            tabBarItemStyle: { display: 'none' },
             headerShown: false,
           }}
         />

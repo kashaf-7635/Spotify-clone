@@ -24,8 +24,7 @@ import LibraryCard from '../../components/Cards/LibraryCard';
 import TrackPlayer, { State, usePlaybackState } from 'react-native-track-player';
 import TextCmp from '../../components/Styled/TextCmp';
 import ImageCmp from '../../components/Styled/ImageCmp';
-import { loadAndPlayAlbum, loadAndPlayPlaylist, playAlbumFromIndex, togglePlayPause } from '../../utils/helpers/player';
-import Track from '../../models/track';
+import { loadAndPlayAlbum, playAlbumFromIndex, togglePlayPause } from '../../utils/helpers/player';
 
 const UserFeaturedItem = ({ navigation, route }) => {
   const type = route?.params?.type;
@@ -78,7 +77,7 @@ const UserFeaturedItem = ({ navigation, route }) => {
   }, [accessToken]);
 
   const handlePlayPause = async () => {
-    const isSameAlbum = playingObj?.albumId === topTrackAlbum?.id;
+    const isSameAlbum = playingObj?.parentId === topTrackAlbum?.id;
 
     if (!isSameAlbum || !playingObj) {
       await loadAndPlayAlbum(topTrackAlbum);
@@ -195,7 +194,7 @@ const UserFeaturedItem = ({ navigation, route }) => {
                             style={[s.iconCircle, s.iconCircleBig]}>
                             <Foundation
                               name={
-                                isPlaying && playingObj?.albumId === topTrackAlbum.id
+                                isPlaying && playingObj?.parentId === topTrackAlbum.id
                                   ? 'pause'
                                   : 'play'
                               }

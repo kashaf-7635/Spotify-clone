@@ -31,7 +31,7 @@ const Home = ({ navigation }) => {
   const refreshToken = useSelector(state => state.auth.refreshToken);
   const playingObj = useSelector(state => state.player.playingObj);
 
-useEffect(() => {
+  useEffect(() => {
     if (!accessToken) return;
 
     const spotifyAPI = createSpotifyAPI(accessToken, refreshToken);
@@ -49,6 +49,7 @@ useEffect(() => {
     requestHandler({
       requestFn: () => spotifyAPI.get('/me/player/recently-played'),
       onSuccess: async res => {
+
         const items = res.data.items;
 
         const trackMap = {};
