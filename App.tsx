@@ -8,6 +8,7 @@ import { PersistGate } from 'redux-persist/integration/react';
 import { Provider } from 'react-redux'
 import Loading from './src/components/Loading';
 import { setupPlayer } from './src/utils/helpers/player';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 
 const App = () => {
@@ -31,9 +32,11 @@ const App = () => {
       <StatusBar barStyle={'light-content'} />
       <Provider store={store}>
         <PersistGate loading={null} persistor={persistor}>
-          <NavigationContainer>
-            <AppNavigation />
-          </NavigationContainer>
+          <SafeAreaProvider>
+            <NavigationContainer>
+              <AppNavigation />
+            </NavigationContainer>
+          </SafeAreaProvider>
         </PersistGate>
       </Provider>
 

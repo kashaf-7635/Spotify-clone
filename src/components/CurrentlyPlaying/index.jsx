@@ -2,6 +2,7 @@ import {
   StyleSheet,
   View,
   TouchableOpacity,
+  Text
 } from 'react-native';
 import Colors from '../../utils/constants/colors';
 import { moderateScale, scale, verticalScale } from 'react-native-size-matters';
@@ -49,15 +50,16 @@ const CurrentlyPlaying = ({ style }) => {
           </View>
 
           <View style={s.titleDiv}>
-            <TextCmp weight="bold">
-              {playingObj?.title}
-              <Entypo
-                name="dot-single"
-                color={'white'}
-                size={moderateScale(15)}
-              />
-              <TextCmp color={Colors.text400}>{playingObj?.artist}</TextCmp>
+            <TextCmp weight="bold" textConfig={{ numberOfLines: 1 }}>
+              {playingObj?.title}{' '}
+              <Text>
+                <Entypo name="dot-single" color={'white'} size={moderateScale(15)} />
+              </Text>{' '}
+              <Text style={{ color: Colors.text400 }}>
+                {playingObj?.artist}
+              </Text>
             </TextCmp>
+
 
             <View style={s.bluetooth}>
               <Foundation

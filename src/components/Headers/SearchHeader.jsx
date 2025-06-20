@@ -3,11 +3,15 @@ import React from 'react';
 import SimpleLineIcons from '@react-native-vector-icons/simple-line-icons';
 import { moderateScale, scale, verticalScale } from 'react-native-size-matters';
 import TextCmp from '../Styled/TextCmp';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const SearchHeader = () => {
+  const insets = useSafeAreaInsets();
   return (
     <>
-      <View style={s.main}>
+      <View style={[s.main,
+      { paddingTop: insets.top+ 20 }
+      ]}>
         <View style={s.titleContainer}>
           <TextCmp size={22} weight="bold">
             Search
@@ -25,7 +29,6 @@ export default SearchHeader;
 
 const s = StyleSheet.create({
   main: {
-    paddingTop: StatusBar.currentHeight + verticalScale(20),
     paddingHorizontal: scale(20),
     flexDirection: 'row',
     justifyContent: 'space-between',

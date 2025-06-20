@@ -5,6 +5,7 @@ import {
   View,
   FlatList,
   TouchableOpacity,
+  StatusBar,
 } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import LinearGradient from 'react-native-linear-gradient';
@@ -30,10 +31,11 @@ import {
 } from '../../utils/helpers/player';
 import TextCmp from '../../components/Styled/TextCmp';
 import ImageCmp from '../../components/Styled/ImageCmp';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const Album = ({ route, navigation }) => {
   const dispatch = useDispatch();
-
+  const insets = useSafeAreaInsets();
   const albumId = route?.params.albumId;
   const { requestHandler, isLoading } = useRequest();
   const accessToken = useSelector(state => state.auth.accessToken);
@@ -83,13 +85,15 @@ const Album = ({ route, navigation }) => {
   return (
     <LinearGradient
       colors={['#962419', '#661710', '#430E09']}
-      locations={[0, 0.45, 1]}
+      // locations={[0, 0.45, 1]}
       style={[s.container, { paddingBottom: playingObj ? verticalScale(60) : verticalScale(20) }]}>
       {isLoading || !album || !artist ? (
         <Loading />
       ) : (
         <>
-          <View style={s.main}>
+          <View style={[s.main,
+          { paddingTop: insets.top+ 20 }
+          ]}>
             <TouchableOpacity onPress={() => navigation.goBack()}>
               <SimpleLineIcons name="arrow-left" color={'white'} size={15} />
             </TouchableOpacity>
@@ -205,7 +209,6 @@ export default Album;
 const s = StyleSheet.create({
   container: {
     flex: 1,
-    paddingTop: verticalScale(60),
     paddingHorizontal: scale(10),
   },
   main: {

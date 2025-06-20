@@ -5,6 +5,7 @@ import {
   View,
   FlatList,
   TouchableOpacity,
+  StatusBar,
 } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import LinearGradient from 'react-native-linear-gradient';
@@ -23,9 +24,11 @@ import LibraryCard from '../../components/Cards/LibraryCard';
 import { State, usePlaybackState } from 'react-native-track-player';
 import TextCmp from '../../components/Styled/TextCmp';
 import ImageCmp from '../../components/Styled/ImageCmp';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const Artist = ({ route, navigation }) => {
   const dispatch = useDispatch();
+  const insets = useSafeAreaInsets();
   const artistId = route?.params.artistId;
   const { requestHandler, isLoading } = useRequest();
   const accessToken = useSelector(state => state.auth.accessToken);
@@ -69,7 +72,9 @@ const Artist = ({ route, navigation }) => {
         <Loading />
       ) : (
         <>
-          <View style={s.main}>
+          <View style={[s.main,
+          { paddingTop: insets.top+ 20 }
+          ]}>
             <TouchableOpacity onPress={() => navigation.goBack()}>
               <SimpleLineIcons
                 name="arrow-left"
@@ -160,7 +165,6 @@ export default Artist;
 const s = StyleSheet.create({
   container: {
     flex: 1,
-    paddingVertical: verticalScale(60),
     paddingHorizontal: scale(10),
   },
   main: {

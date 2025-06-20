@@ -152,9 +152,9 @@ const Library = ({ navigation }) => {
   }, [accessToken, refreshToken, handleAddToLikedSongs]);
 
   const extractItems = () => {
-    const allPlaylists = playlists.map(item => ({ ...item, type: 'Playlists' }));
-    const allAlbums = albums.map(album => ({ ...album.album, type: 'Albums' }));
-    const allArtists = artists.map(artist => ({ ...artist, type: 'Artists' }));
+    const allPlaylists = playlists.map(item => ({ ...item, type: 'playlist' }));
+    const allAlbums = albums.map(album => ({ ...album.album, type: 'album' }));
+    const allArtists = artists.map(artist => ({ ...artist, type: 'artist' }));
     return [...allPlaylists, ...allAlbums, ...allArtists];
   };
 
@@ -175,12 +175,15 @@ const Library = ({ navigation }) => {
   }, [albums, playlists, artists, tab]);
 
 
+  console.log(results);
+
+
   return (
     <View style={[s.container, { paddingBottom: playingObj?.id && verticalScale(60) }]}>
       <View style={s.tabContainer}>
-        {playlists.length !== 0 && <Tab title="Playlists" />}
-        {artists.length !== 0 && <Tab title="Artists" />}
-        {albums.length !== 0 && <Tab title="Albums" />}
+        {playlists.length !== 0 && <Tab title="playlist" />}
+        {artists.length !== 0 && <Tab title="artist" />}
+        {albums.length !== 0 && <Tab title="album" />}
       </View>
 
       <View style={s.title}>
@@ -296,7 +299,7 @@ export default Library;
 const s = StyleSheet.create({
   container: {
     flex: 1,
-    paddingTop: verticalScale(20),
+    paddingTop: verticalScale(15),
   },
   tabContainer: {
     flexDirection: 'row',

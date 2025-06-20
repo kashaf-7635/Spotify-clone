@@ -7,6 +7,7 @@ import { persistor, store } from '../../store';
 import Colors from '../../utils/constants/colors';
 import TrackPlayer from 'react-native-track-player';
 import TextCmp from '../Styled/TextCmp';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export const logoutFromSpotify = async () => {
   console.log('logging out...');
@@ -20,9 +21,12 @@ export const logoutFromSpotify = async () => {
 };
 
 const HomeHeader = () => {
+  const insets = useSafeAreaInsets();
   return (
     <>
-      <View style={s.main}>
+      <View style={[s.main,
+      { paddingTop: insets.top + 20}
+      ]}>
         <View style={s.titleContainer}>
           <TextCmp weight="bold" size={22}>
             Recently played
@@ -39,11 +43,11 @@ const HomeHeader = () => {
             color={'white'}
             size={moderateScale(30)}
           />
-          <MaterialIcons
+          {/* <MaterialIcons
             name="settings"
             color={'white'}
             size={moderateScale(30)}
-          />
+          /> */}
           <TouchableOpacity onPress={logoutFromSpotify}>
             <MaterialIcons
               name="logout"
@@ -61,7 +65,7 @@ export default HomeHeader;
 
 const s = StyleSheet.create({
   main: {
-    paddingTop: StatusBar.currentHeight + verticalScale(20),
+
     paddingHorizontal: scale(20),
     flexDirection: 'row',
     backgroundColor: Colors.bg800,

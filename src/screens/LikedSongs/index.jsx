@@ -5,6 +5,7 @@ import {
     View,
     FlatList,
     TouchableOpacity,
+    StatusBar,
 } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import LinearGradient from 'react-native-linear-gradient';
@@ -25,19 +26,45 @@ import TrackPlayer, { State, usePlaybackState } from 'react-native-track-player'
 import TextCmp from '../../components/Styled/TextCmp';
 import ImageCmp from '../../components/Styled/ImageCmp';
 import { loadAndPlayAlbum, loadAndPlayPlaylist, playAlbumFromIndex, playPlaylistFromIndex, togglePlayPause } from '../../utils/helpers/player';
+import { useIsFocused } from '@react-navigation/native';
+import { setLikedSongAlbum } from '../../store/playerSlice';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const LikedSongs = ({ navigation }) => {
-
+    const dispatch = useDispatch()
+    const insets = useSafeAreaInsets();
     const playbackState = usePlaybackState().state;
     const isPlaying = playbackState === State.Playing;
     const { requestHandler, isLoading } = useRequest();
-
+    const accessToken = useSelector(state => state.auth.accessToken);
+    const refreshToken = useSelector(state => state.auth.refreshToken);
+    const isFocused = useIsFocused();
     const userData = useSelector(state => state.auth.userData);
 
 
     const playingObj = useSelector(state => state.player.playingObj);
     const likedSongAlbum = useSelector(state => state.player.likedSongAlbum);
+    useEffect(() => {
+        if (!accessToken) return;
 
+        const spotifyAPI = createSpotifyAPI(accessToken, refreshToken);
+
+        requestHandler({
+            requestFn: () => spotifyAPI.get(`/me/tracks`),
+            onSuccess: async res => {
+                const album = {
+                    id: 'liked-songs',
+                    tracks: { items: res.data.items }
+                }
+                dispatch(setLikedSongAlbum(album))
+
+            },
+            onError: err => {
+                console.log(err.response?.data || err.message);
+            },
+        });
+
+    }, [accessToken, refreshToken, isFocused]);
 
 
     const handlePlayPause = async () => {
@@ -62,7 +89,9 @@ const LikedSongs = ({ navigation }) => {
                 <Loading />
             ) : (
                 <>
-                    <View style={s.main}>
+                    <View style={[s.main,
+                    { paddingTop: insets.top+ 20 }
+                    ]}>
                         <TouchableOpacity onPress={() => navigation.goBack()}>
                             <SimpleLineIcons
                                 name="arrow-left"
@@ -187,7 +216,6 @@ const s = StyleSheet.create({
     container: {
         flex: 1,
         paddingHorizontal: moderateScale(10),
-        paddingTop: verticalScale(60)
     },
     main: {
         flex: 1,

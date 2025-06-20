@@ -29,9 +29,11 @@ import TextCmp from '../../components/Styled/TextCmp';
 import ImageCmp from '../../components/Styled/ImageCmp';
 import { useNavigation } from '@react-navigation/native';
 import { setIsShuffled } from '../../store/playerSlice';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const TrackView = () => {
   const dispatch = useDispatch()
+  const insets = useSafeAreaInsets();
   const navigation = useNavigation()
   const playingObj = useSelector(state => state.player.playingObj);
   const isShuffled = useSelector(state => state.player.isShuffled);
@@ -104,7 +106,7 @@ const TrackView = () => {
   };
 
   useEffect(() => {
-    if (!accessToken || !playingObj) return;
+    if (!accessToken || !playingObj?.albumId) return;
 
     const spotifyAPI = createSpotifyAPI(accessToken, refreshToken);
     requestHandler({
@@ -221,36 +223,38 @@ const TrackView = () => {
       },
     });
   }
-const handleFav = async (trackId) => {
-  if (isLiked) {
-    await handleRemoveFromLikedSongs(trackId);
-    setIsLiked(false); 
-  } else {
-    await handleAddToLikedSongs(trackId);
-    setIsLiked(true); 
-  }
-};
+  const handleFav = async (trackId) => {
+    if (isLiked) {
+      await handleRemoveFromLikedSongs(trackId);
+      setIsLiked(false);
+    } else {
+      await handleAddToLikedSongs(trackId);
+      setIsLiked(true);
+    }
+  };
 
 
   return (
     <>
       <LinearGradient
         colors={['#962419', '#661710', '#430E09']}
-        locations={[0, 0.45, 1]}
+        // locations={[0, 0.45, 1]}
         style={s.container}>
         <ScrollView
           showsVerticalScrollIndicator={false}
           style={{ flex: 1 }}
           contentContainerStyle={s.main}>
-          <View style={s.main}>
+          <View style={[s.main,
+          { paddingTop: insets.top+ 20 }
+          ]}>
             <View style={s.header}>
-              <View style={{ flex: 0.1 }}>
+              <TouchableOpacity style={{ flex: 0.1 }} onPress={() => navigation.goBack()}>
                 <SimpleLineIcons
                   name="arrow-down"
                   color={'white'}
                   size={moderateScale(20)}
                 />
-              </View>
+              </TouchableOpacity>
               <View style={{ flex: 0.8 }}>
                 <TextCmp size={16} align="center">
                   {album?.name}
@@ -406,7 +410,6 @@ const s = StyleSheet.create({
   },
   main: {
     flexGrow: 1,
-    paddingTop: verticalScale(30),
     paddingHorizontal: scale(10),
     paddingBottom: verticalScale(40),
   },

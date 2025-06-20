@@ -5,6 +5,7 @@ import {
   View,
   FlatList,
   TouchableOpacity,
+  StatusBar,
 } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import LinearGradient from 'react-native-linear-gradient';
@@ -24,10 +25,12 @@ import TrackPlayer, { State, usePlaybackState } from 'react-native-track-player'
 import TextCmp from '../../components/Styled/TextCmp';
 import ImageCmp from '../../components/Styled/ImageCmp';
 import { loadAndPlayPlaylist, playPlaylistFromIndex, togglePlayPause } from '../../utils/helpers/player';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 
 const Playlist = ({ route, navigation }) => {
   const dispatch = useDispatch();
+  const insets = useSafeAreaInsets();
   const playlistId = route?.params.playlistId;
   const { requestHandler, isLoading } = useRequest();
   const accessToken = useSelector(state => state.auth.accessToken);
@@ -76,7 +79,9 @@ const Playlist = ({ route, navigation }) => {
         <Loading />
       ) : (
         <>
-          <View style={s.main}>
+          <View style={[s.main,
+          { paddingTop: insets.top+ 20 }
+          ]}>
             <TouchableOpacity onPress={() => navigation.goBack()}>
               <SimpleLineIcons
                 name="arrow-left"
@@ -189,7 +194,6 @@ export default Playlist;
 const s = StyleSheet.create({
   container: {
     flex: 1,
-    paddingVertical: verticalScale(60),
     paddingHorizontal: scale(10),
   },
   main: {

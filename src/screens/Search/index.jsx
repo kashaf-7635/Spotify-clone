@@ -158,7 +158,7 @@ export default Search;
 const s = StyleSheet.create({
   main: {
     flex: 1,
-    paddingTop: verticalScale(30),
+    paddingTop: verticalScale(15),
     paddingHorizontal: scale(10),
     alignItems: 'center',
   },

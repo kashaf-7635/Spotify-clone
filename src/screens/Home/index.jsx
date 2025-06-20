@@ -18,6 +18,8 @@ import Loading from '../../components/Loading';
 import { scale, verticalScale } from 'react-native-size-matters';
 import TextCmp from '../../components/Styled/TextCmp';
 import ImageCmp from '../../components/Styled/ImageCmp';
+import { authConfig } from '../../utils/auth/authConfig';
+import { refresh } from 'react-native-app-auth';
 
 const Home = ({ navigation }) => {
   const [artists, setArtists] = useState([]);
@@ -142,6 +144,21 @@ const Home = ({ navigation }) => {
     setResults(combined);
   }, [albums, artists]);
 
+  // useEffect(() => {
+  //   const refreshAccessToken = async () => {
+  //     try {
+  //       const result = await refresh(authConfig, { refreshToken });
+  //       console.log(result, 'rasraesrearseraesrearseraesr');
+  //       console.log('done');
+
+  //     } catch (err) {
+  //       console.error('Failed to refresh token:', err.response.data || err.message);
+  //     }
+  //   };
+
+  //   refreshAccessToken()
+  // }, [])
+
   return (
     <View style={s.main}>
       {isLoading ? (
@@ -152,7 +169,7 @@ const Home = ({ navigation }) => {
             <View
               style={{
                 flexGrow: 1,
-                paddingTop: verticalScale(20),
+                paddingTop: verticalScale(15),
                 paddingBottom: playingObj?.id && verticalScale(60),
               }}>
               <FlatList
@@ -164,7 +181,8 @@ const Home = ({ navigation }) => {
                   return <RecentlyPlayedCard item={item} />;
                 }}
               />
-              <View style={s.row}>
+
+              <View style={[s.row, { marginVertical: verticalScale(10) }]}>
                 <ImageCmp
                   size={60}
                   borderRadius={10}
@@ -257,6 +275,7 @@ const Home = ({ navigation }) => {
 export default Home;
 
 const s = StyleSheet.create({
+
   main: {
     flex: 1,
     paddingHorizontal: scale(10),

@@ -25,8 +25,10 @@ import TrackPlayer, { State, usePlaybackState } from 'react-native-track-player'
 import TextCmp from '../../components/Styled/TextCmp';
 import ImageCmp from '../../components/Styled/ImageCmp';
 import { loadAndPlayAlbum, playAlbumFromIndex, togglePlayPause } from '../../utils/helpers/player';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const UserFeaturedItem = ({ navigation, route }) => {
+  const insets = useSafeAreaInsets();
   const type = route?.params?.type;
   const playbackState = usePlaybackState().state;
   const isPlaying = playbackState === State.Playing;
@@ -99,7 +101,9 @@ const UserFeaturedItem = ({ navigation, route }) => {
         <Loading />
       ) : (
         <>
-          <View style={s.main}>
+          <View style={[s.main,
+          { paddingTop: insets.top + 20 }
+          ]}>
             <TouchableOpacity onPress={() => navigation.goBack()}>
               <SimpleLineIcons
                 name="arrow-left"
@@ -235,7 +239,6 @@ const s = StyleSheet.create({
   container: {
     flex: 1,
     paddingHorizontal: moderateScale(10),
-    paddingTop: verticalScale(60)
   },
   main: {
     flex: 1,

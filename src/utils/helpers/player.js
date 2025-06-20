@@ -134,7 +134,7 @@ export const playPlaylistFromIndex = async (playlist, startIndex = 0) => {
       item.track?.artists[0]?.name,
       playlist?.images?.[0]?.url || item?.track?.album?.images?.[0]?.url,
       item.track?.duration_ms ? item.track?.duration_ms / 1000 : 30,
-      item?.album?.id,
+      item.track?.album?.id,
       playlist?.id,
 
     );

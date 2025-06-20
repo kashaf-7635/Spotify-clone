@@ -16,17 +16,13 @@ export const createSpotifyAPI = (initialAccessToken, initialRefreshToken) => {
   const getAccessToken = () => accessToken;
 
   const refreshAccessToken = async () => {
-    console.log('refreshing token...', refreshToken);
-
     try {
       const result = await refresh(authConfig, { refreshToken });
       accessToken = result.accessToken;
       refreshToken = result.refreshToken;
-
-
-      console.log(result);
+      console.log(result, 'inside instance');
     } catch (err) {
-      console.error('Failed to refresh token:', err);
+      console.error('Failed to refresh token inside instance:', err);
       logoutFromSpotify();
       Alert.alert('Session Expired', 'Please log in again.');
     }
