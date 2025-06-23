@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, {useEffect} from 'react';
 import {
   View,
   Text,
@@ -8,23 +8,23 @@ import {
   Alert,
   ImageBackground,
 } from 'react-native';
-import { loginToSpotify } from '../../utils/auth/AuthService';
+import {loginToSpotify} from '../../utils/auth/AuthService';
 import Colors from '../../utils/constants/colors';
 import Fonts from '../../utils/constants/fonts';
-import { moderateScale, scale, verticalScale } from 'react-native-size-matters';
-import { useDispatch, useSelector } from 'react-redux';
-import { authenticate } from '../../store/authSlice';
-import { createSpotifyAPI } from '../../utils/axios/axiosInstance';
-import { useRequest } from '../../hooks/useRequest';
+import {moderateScale, scale, verticalScale} from 'react-native-size-matters';
+import {useDispatch, useSelector} from 'react-redux';
+import {authenticate} from '../../store/authSlice';
+import {createSpotifyAPI} from '../../utils/axios/axiosInstance';
+import {useRequest} from '../../hooks/useRequest';
 import Loading from '../../components/Loading';
 import TextCmp from '../../components/Styled/TextCmp';
 import ImageCmp from '../../components/Styled/ImageCmp';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
-export default function Login({ }) {
+export default function Login({}) {
   const dispatch = useDispatch();
   const insets = useSafeAreaInsets();
-  const { requestHandler, isLoading } = useRequest();
+  const {requestHandler, isLoading} = useRequest();
   const userData = useSelector(state => state.auth.userData);
 
   useEffect(() => {
@@ -40,14 +40,13 @@ export default function Login({ }) {
         const refreshToken = authResult.refreshToken;
         const spotifyAPI = createSpotifyAPI(accessToken, refreshToken);
 
-
         requestHandler({
           requestFn: () => spotifyAPI.get('/me'),
           onSuccess: userResponse => {
             const userData = userResponse.data;
-            console.log({ userData, accessToken, refreshToken });
+            console.log({userData, accessToken, refreshToken});
 
-            dispatch(authenticate({ userData, accessToken, refreshToken }));
+            dispatch(authenticate({userData, accessToken, refreshToken}));
             Alert.alert('Welcome!', `Welcome ${userData.display_name}!`);
           },
           onError: err => {
@@ -62,12 +61,15 @@ export default function Login({ }) {
   };
 
   return (
-    <View style={[s.main,
-    { paddingTop: insets.top+ 20 }
-    ]}>
-
-      <ImageBackground resizeMode="cover" source={require('../../assets/images/login-bg.png')} style={s.bg}>
-        <ImageCmp source={require('../../assets/images/white-logo.png')} size={50} />
+    <View style={[s.main]}>
+      <ImageBackground
+        resizeMode="cover"
+        source={require('../../assets/images/login-bg.png')}
+        style={s.bg}>
+        <ImageCmp
+          source={require('../../assets/images/white-logo.png')}
+          size={50}
+        />
       </ImageBackground>
 
       <View style={s.content}>
@@ -79,7 +81,6 @@ export default function Login({ }) {
             Free on Spotify.
           </TextCmp>
         </View>
-
 
         <View style={s.btns}>
           {isLoading ? (
@@ -93,7 +94,7 @@ export default function Login({ }) {
           )}
         </View>
       </View>
-    </View >
+    </View>
   );
 }
 
@@ -104,7 +105,13 @@ const s = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#111111',
   },
-  bg: { width: '100%', height: verticalScale(300), justifyContent: 'flex-end', alignItems: 'center', flex: 1 },
+  bg: {
+    width: '100%',
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+    flex: 1,
+    paddingVertical: verticalScale(20),
+  },
 
   content: {
     width: '100%',

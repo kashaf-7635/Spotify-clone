@@ -6,37 +6,62 @@ import {
   FlatList,
   TouchableOpacity,
   StatusBar,
+  Animated,
 } from 'react-native';
-import React, { useEffect, useState } from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import LinearGradient from 'react-native-linear-gradient';
 import SimpleLineIcons from '@react-native-vector-icons/simple-line-icons';
 import Entypo from '@react-native-vector-icons/entypo';
-import { moderateScale, scale, verticalScale } from 'react-native-size-matters';
+import {moderateScale, scale, verticalScale} from 'react-native-size-matters';
 import Fonts from '../../utils/constants/fonts';
-import { useRequest } from '../../hooks/useRequest';
-import { useDispatch, useSelector } from 'react-redux';
-import { createSpotifyAPI } from '../../utils/axios/axiosInstance';
+import {useRequest} from '../../hooks/useRequest';
+import {useDispatch, useSelector} from 'react-redux';
+import {createSpotifyAPI} from '../../utils/axios/axiosInstance';
 import Loading from '../../components/Loading';
 import Colors from '../../utils/constants/colors';
 import FontAwesome from '@react-native-vector-icons/fontawesome';
 import Foundation from '@react-native-vector-icons/foundation';
 import LibraryCard from '../../components/Cards/LibraryCard';
-import { State, usePlaybackState } from 'react-native-track-player';
+import {State, usePlaybackState} from 'react-native-track-player';
 import TextCmp from '../../components/Styled/TextCmp';
 import ImageCmp from '../../components/Styled/ImageCmp';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import {useIsFocused} from '@react-navigation/native';
 
-const Artist = ({ route, navigation }) => {
+const Artist = ({route, navigation}) => {
   const dispatch = useDispatch();
   const insets = useSafeAreaInsets();
   const artistId = route?.params.artistId;
-  const { requestHandler, isLoading } = useRequest();
+  const {requestHandler, isLoading} = useRequest();
   const accessToken = useSelector(state => state.auth.accessToken);
   const refreshToken = useSelector(state => state.auth.refreshToken);
   const [artist, setArtist] = useState(null);
   const [albums, setAlbums] = useState([]);
   const playbackState = usePlaybackState().state;
-  const isPlaying = playbackState === State.Playing;
+  const isFocused = useIsFocused();
+  const scrollY = useRef(new Animated.Value(0)).current;
+  useEffect(() => {
+    if (isFocused) {
+      scrollY.setValue(0);
+    }
+  }, [isFocused]);
+  const handleScroll = Animated.event(
+    [{nativeEvent: {contentOffset: {y: scrollY}}}],
+    {
+      useNativeDriver: false,
+    },
+  );
+
+  const imageSize = scrollY.interpolate({
+    inputRange: [0, 100],
+    outputRange: [200, 70],
+    extrapolate: 'clamp',
+  });
+  const titleOpacity = scrollY.interpolate({
+    inputRange: [120, 200],
+    outputRange: [0, 1],
+    extrapolate: 'clamp',
+  });
 
   useEffect(() => {
     if (!accessToken) return;
@@ -65,32 +90,43 @@ const Artist = ({ route, navigation }) => {
 
   return (
     <LinearGradient
-      colors={['#962419', '#661710', '#430E09']}
-      locations={[0, 0.45, 1]}
+      colors={['#C63224', '#641D17', '#271513', '#121212']}
+      locations={[0, 0.37, 0.63, 1]}
+      start={{x: 0, y: 0}}
+      end={{x: 0, y: 1}}
       style={s.container}>
       {isLoading ? (
         <Loading />
       ) : (
         <>
-          <View style={[s.main,
-          { paddingTop: insets.top+ 20 }
-          ]}>
-            <TouchableOpacity onPress={() => navigation.goBack()}>
-              <SimpleLineIcons
-                name="arrow-left"
-                color={'white'}
-                size={moderateScale(15)}
-              />
-            </TouchableOpacity>
+          <View style={[s.main, {paddingTop: insets.top + 20}]}>
+            <View style={s.header}>
+              <TouchableOpacity onPress={() => navigation.goBack()}>
+                <SimpleLineIcons name="arrow-left" color={'white'} size={15} />
+              </TouchableOpacity>
+              <TextCmp
+                size={18}
+                animated={true}
+                opacity={titleOpacity}
+                weight="semibold">
+                {artist?.name || 'Loading...'}
+              </TextCmp>
+            </View>
 
             <View style={s.inner}>
-              <FlatList
+              <Animated.FlatList
+                onScroll={handleScroll}
+                scrollEventThrottle={16}
                 showsVerticalScrollIndicator={false}
                 data={albums}
                 ListHeaderComponent={
                   <>
                     <View style={s.imageView}>
-                      <ImageCmp size={200} source={artist?.images?.[0]?.url} />
+                      <ImageCmp
+                        animated={true}
+                        size={imageSize}
+                        source={artist?.images?.[0]?.url}
+                      />
                     </View>
 
                     <View style={s.panel}>
@@ -100,7 +136,7 @@ const Artist = ({ route, navigation }) => {
                             {artist?.name || 'Loading...'}
                           </TextCmp>
 
-                          <View style={[s.row, { marginTop: verticalScale(10) }]}>
+                          <View style={[s.row, {marginTop: verticalScale(10)}]}>
                             <TextCmp weight="bold" size={17}>
                               {artist?.genres.join(' , ')}
                             </TextCmp>
@@ -148,7 +184,7 @@ const Artist = ({ route, navigation }) => {
                     </View>
                   </>
                 }
-                renderItem={({ item }) => {
+                renderItem={({item}) => {
                   return <LibraryCard item={item} />;
                 }}
               />
@@ -172,6 +208,13 @@ const s = StyleSheet.create({
     paddingHorizontal: scale(10),
     paddingBottom: verticalScale(30),
   },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: scale(20),
+    paddingVertical: verticalScale(10),
+    marginRight: scale(20),
+  },
   inner: {
     paddingHorizontal: scale(10),
   },
@@ -181,7 +224,7 @@ const s = StyleSheet.create({
   imageView: {
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: verticalScale(20),
+    marginTop: verticalScale(10),
   },
   titleView: {
     flex: 1,

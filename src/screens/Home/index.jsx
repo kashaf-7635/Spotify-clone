@@ -149,14 +149,14 @@ const Home = ({ navigation }) => {
   //     try {
   //       const result = await refresh(authConfig, { refreshToken });
   //       console.log(result, 'rasraesrearseraesrearseraesr');
-  //       console.log('done');
-
   //     } catch (err) {
+  //       console.log(err);
+
   //       console.error('Failed to refresh token:', err.response.data || err.message);
   //     }
   //   };
 
-  //   refreshAccessToken()
+  //   refreshAccessToken();
   // }, [])
 
   return (
