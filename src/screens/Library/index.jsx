@@ -7,27 +7,27 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import React, { useEffect, useState } from 'react';
+import React, {useEffect, useState} from 'react';
 import Fonts from '../../utils/constants/fonts';
-import { moderateScale, scale, verticalScale } from 'react-native-size-matters';
+import {moderateScale, scale, verticalScale} from 'react-native-size-matters';
 import FontAwesome from '@react-native-vector-icons/fontawesome';
 import Octicons from '@react-native-vector-icons/octicons';
 import Colors from '../../utils/constants/colors';
 import Entypo from '@react-native-vector-icons/entypo';
 import LinearGradient from 'react-native-linear-gradient';
 import MaterialIcons from '@react-native-vector-icons/material-icons';
-import { useRequest } from '../../hooks/useRequest';
-import { useDispatch, useSelector } from 'react-redux';
-import { createSpotifyAPI } from '../../utils/axios/axiosInstance';
+import {useRequest} from '../../hooks/useRequest';
+import {useDispatch, useSelector} from 'react-redux';
+import {createSpotifyAPI} from '../../utils/axios/axiosInstance';
 import LibraryCard from '../../components/Cards/LibraryCard';
 import TextCmp from '../../components/Styled/TextCmp';
-import { setLikedSongAlbum } from '../../store/playerSlice';
-import { handleAddToLikedSongs } from '../TrackView';
-import { useIsFocused } from '@react-navigation/native';
+import {setLikedSongAlbum} from '../../store/playerSlice';
+import {handleAddToLikedSongs} from '../TrackView';
+import {useIsFocused} from '@react-navigation/native';
 
-const Library = ({ navigation }) => {
+const Library = ({navigation}) => {
   const dispatch = useDispatch();
-  const { requestHandler, isLoading } = useRequest();
+  const {requestHandler, isLoading} = useRequest();
   const accessToken = useSelector(state => state.auth.accessToken);
   const refreshToken = useSelector(state => state.auth.refreshToken);
   const isFocused = useIsFocused();
@@ -38,15 +38,14 @@ const Library = ({ navigation }) => {
   const playingObj = useSelector(state => state.player.playingObj);
   const likedSongAlbum = useSelector(state => state.player.likedSongAlbum);
 
-
   const [tab, setTab] = useState([]);
 
-  const Tab = ({ title }) => {
+  const Tab = ({title}) => {
     const isSelected = tab.includes(title);
 
     return (
       <TouchableOpacity
-        style={[s.tab, isSelected ? { backgroundColor: Colors.green300 } : {}]}
+        style={[s.tab, isSelected ? {backgroundColor: Colors.green300} : {}]}
         onPress={() => {
           setTab(currTab =>
             isSelected ? currTab.filter(t => t !== title) : [...currTab, title],
@@ -67,10 +66,9 @@ const Library = ({ navigation }) => {
       onSuccess: async res => {
         const album = {
           id: 'liked-songs',
-          tracks: { items: res.data.items }
-        }
-        dispatch(setLikedSongAlbum(album))
-
+          tracks: {items: res.data.items},
+        };
+        dispatch(setLikedSongAlbum(album));
       },
       onError: err => {
         console.log(err.response?.data || err.message);
@@ -115,18 +113,18 @@ const Library = ({ navigation }) => {
     requestHandler({
       requestFn: () => spotifyAPI.get(`/me/tracks`),
       onSuccess: async res => {
+        const tracks = res?.data?.items.map(item => item.track);
         const album = {
           id: 'liked-songs',
-          tracks: { items: res.data.items }
-        }
-        dispatch(setLikedSongAlbum(album))
-
+          name: 'Liked Songs',
+          tracks: {items: tracks},
+        };
+        dispatch(setLikedSongAlbum(album));
       },
       onError: err => {
         console.log(err.response?.data || err.message);
       },
     });
-
   }, [accessToken, refreshToken, isFocused]);
 
   useEffect(() => {
@@ -137,24 +135,25 @@ const Library = ({ navigation }) => {
     requestHandler({
       requestFn: () => spotifyAPI.get(`/me/tracks`),
       onSuccess: async res => {
+        const tracks = res?.data?.items.map(item => item.track);
         const album = {
           id: 'liked-songs',
-          tracks: { items: res.data.items }
-        }
-        dispatch(setLikedSongAlbum(album))
+          name: 'Liked Songs',
+          tracks: {items: tracks},
+        };
 
+        dispatch(setLikedSongAlbum(album));
       },
       onError: err => {
         console.log(err.response?.data || err.message);
       },
     });
-
   }, [accessToken, refreshToken, handleAddToLikedSongs]);
 
   const extractItems = () => {
-    const allPlaylists = playlists.map(item => ({ ...item, type: 'playlist' }));
-    const allAlbums = albums.map(album => ({ ...album.album, type: 'album' }));
-    const allArtists = artists.map(artist => ({ ...artist, type: 'artist' }));
+    const allPlaylists = playlists.map(item => ({...item, type: 'playlist'}));
+    const allAlbums = albums.map(album => ({...album.album, type: 'album'}));
+    const allArtists = artists.map(artist => ({...artist, type: 'artist'}));
     return [...allPlaylists, ...allAlbums, ...allArtists];
   };
 
@@ -174,12 +173,14 @@ const Library = ({ navigation }) => {
     }
   }, [albums, playlists, artists, tab]);
 
-
   console.log(results);
 
-
   return (
-    <View style={[s.container, { paddingBottom: playingObj?.id && verticalScale(60) }]}>
+    <View
+      style={[
+        s.container,
+        {paddingBottom: playingObj?.id && verticalScale(60)},
+      ]}>
       <View style={s.tabContainer}>
         {playlists.length !== 0 && <Tab title="playlist" />}
         {artists.length !== 0 && <Tab title="artist" />}
@@ -214,12 +215,14 @@ const Library = ({ navigation }) => {
           keyExtractor={(item, index) =>
             item.item?.id || `${item.type}-${index}`
           }
-          renderItem={({ item }) => <LibraryCard item={item} />}
+          renderItem={({item}) => <LibraryCard item={item} />}
           ListHeaderComponent={() => {
             return (
               <>
-                {likedSongAlbum?.tracks?.items?.length !== 0 &&
-                  <TouchableOpacity style={s.card} onPress={() => navigation.navigate('LikedSongs')}>
+                {likedSongAlbum?.tracks?.items?.length !== 0 && (
+                  <TouchableOpacity
+                    style={s.card}
+                    onPress={() => navigation.navigate('LikedSongs')}>
                     <LinearGradient
                       locations={[0.12, 0.56, 0.99]}
                       colors={['#4A39EA', '#868AE1', '#B9D4DB']}
@@ -250,13 +253,14 @@ const Library = ({ navigation }) => {
                             color={'white'}
                             size={moderateScale(15)}
                           />
-                          {`${likedSongAlbum?.tracks?.items?.length} Song${likedSongAlbum?.tracks?.items?.length > 1 ? 's' : ''}`}
+                          {`${likedSongAlbum?.tracks?.items?.length} Song${
+                            likedSongAlbum?.tracks?.items?.length > 1 ? 's' : ''
+                          }`}
                         </TextCmp>
                       </View>
                     </View>
                   </TouchableOpacity>
-                }
-
+                )}
 
                 <View style={s.card}>
                   <View style={[s.likedSongs, s.newEpi]}>

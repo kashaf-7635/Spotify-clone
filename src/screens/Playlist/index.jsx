@@ -1,72 +1,23 @@
-import {
-  Image,
-  StyleSheet,
-  Text,
-  View,
-  FlatList,
-  TouchableOpacity,
-  StatusBar,
-  Animated,
-} from 'react-native';
-import React, {useEffect, useRef, useState} from 'react';
-import LinearGradient from 'react-native-linear-gradient';
-import SimpleLineIcons from '@react-native-vector-icons/simple-line-icons';
-import Entypo from '@react-native-vector-icons/entypo';
-import {moderateScale, scale, verticalScale} from 'react-native-size-matters';
-import Fonts from '../../utils/constants/fonts';
+import React, {useEffect, useState} from 'react';
 import {useRequest} from '../../hooks/useRequest';
-import {useDispatch, useSelector} from 'react-redux';
+import {useSelector} from 'react-redux';
 import {createSpotifyAPI} from '../../utils/axios/axiosInstance';
-import Loading from '../../components/Loading';
+import ListDisplay from '../../components/ListDisplay';
+import {StyleSheet, View} from 'react-native';
+import {moderateScale, scale, verticalScale} from 'react-native-size-matters';
 import Colors from '../../utils/constants/colors';
-import FontAwesome from '@react-native-vector-icons/fontawesome';
-import Foundation from '@react-native-vector-icons/foundation';
-import TrackCard from '../../components/Cards/TrackCard';
-import TrackPlayer, {State, usePlaybackState} from 'react-native-track-player';
 import TextCmp from '../../components/Styled/TextCmp';
 import ImageCmp from '../../components/Styled/ImageCmp';
-import {
-  loadAndPlayPlaylist,
-  playPlaylistFromIndex,
-  togglePlayPause,
-} from '../../utils/helpers/player';
-import {useSafeAreaInsets} from 'react-native-safe-area-context';
-import {useIsFocused} from '@react-navigation/native';
+import Entypo from '@react-native-vector-icons/entypo';
+import {formatDate, formatTotalDuration} from '../../utils/helpers/time';
 
 const Playlist = ({route, navigation}) => {
-  const dispatch = useDispatch();
-  const insets = useSafeAreaInsets();
   const playlistId = route?.params.playlistId;
   const {requestHandler, isLoading} = useRequest();
   const accessToken = useSelector(state => state.auth.accessToken);
   const refreshToken = useSelector(state => state.auth.refreshToken);
   const [playlist, setPlaylist] = useState(null);
-  const playbackState = usePlaybackState().state;
-  const isPlaying = playbackState === State.Playing;
-  const playingObj = useSelector(state => state.player.playingObj);
-  const isFocused = useIsFocused();
-  const scrollY = useRef(new Animated.Value(0)).current;
-  const [isSticky, setIsSticky] = useState(false);
-  useEffect(() => {
-    if (isFocused) {
-      scrollY.setValue(0);
-      setIsSticky(false);
-    }
-  }, [isFocused]);
-  const handleScroll = Animated.event(
-    [{nativeEvent: {contentOffset: {y: scrollY}}}],
-    {
-      useNativeDriver: false,
-      listener: event => {
-        const y = event.nativeEvent.contentOffset.y;
-        if (y > 100 && !isSticky) {
-          setIsSticky(true);
-        } else if (y <= 100 && isSticky) {
-          setIsSticky(false);
-        }
-      },
-    },
-  );
+  const [tracks, setTracks] = useState([]);
 
   useEffect(() => {
     if (!accessToken) return;
@@ -76,6 +27,8 @@ const Playlist = ({route, navigation}) => {
       requestFn: () => spotifyAPI.get(`/playlists/${playlistId}`),
       onSuccess: async res => {
         setPlaylist(res.data);
+        const tracks = res?.data?.tracks?.items.map(item => item.track);
+        setTracks(tracks);
       },
       onError: err => {
         console.log(err.response?.data || err.message);
@@ -83,254 +36,45 @@ const Playlist = ({route, navigation}) => {
     });
   }, [accessToken, route]);
 
-  const handlePlayPause = async () => {
-    const isSamePlaylist = playingObj?.parentId === playlist?.id;
-    if (!isSamePlaylist || !playingObj) {
-      loadAndPlayPlaylist(playlist);
-    } else {
-      await togglePlayPause();
-    }
-  };
+  const Header = () => {
+    return (
+      <View style={s.titleView}>
+        <TextCmp weight="bold" size={20}>
+          {playlist?.name || 'Loading...'}
+        </TextCmp>
 
-  const handleTrackSelect = async index => {
-    await playPlaylistFromIndex(playlist, index);
-  };
+        <View style={[{marginTop: moderateScale(10)}]}>
+          <TextCmp weight="bold" size={17}>
+            {playlist?.owner?.display_name || ''}
+          </TextCmp>
+        </View>
 
-  const imageSize = scrollY.interpolate({
-    inputRange: [0, 100],
-    outputRange: [200, 70],
-    extrapolate: 'clamp',
-  });
-  const titleOpacity = scrollY.interpolate({
-    inputRange: [120, 200],
-    outputRange: [0, 1],
-    extrapolate: 'clamp',
-  });
-  const playBtnOpacity = scrollY.interpolate({
-    inputRange: [100, 200],
-    outputRange: [0, 1],
-    extrapolate: 'clamp',
-  });
+        <View style={[{marginTop: moderateScale(10)}]}>
+          <TextCmp size={17}>
+            {formatTotalDuration(tracks)}
+          </TextCmp>
+        </View>
+      </View>
+    );
+  };
 
   return (
-    <LinearGradient
-      colors={['#962419', '#661710', '#430E09']}
-      locations={[0, 0.45, 1]}
-      style={s.container}>
-      {isLoading ? (
-        <Loading />
-      ) : (
-        <>
-          <View style={[s.main, {paddingTop: insets.top + 20}]}>
-            <View style={s.header}>
-              <TouchableOpacity onPress={() => navigation.goBack()}>
-                <SimpleLineIcons name="arrow-left" color={'white'} size={15} />
-              </TouchableOpacity>
-              <TextCmp
-                size={18}
-                animated={true}
-                opacity={titleOpacity}
-                weight="semibold">
-                {playlist?.name || 'Loading...'}
-              </TextCmp>
-            </View>
-
-            <View style={s.inner}>
-              <Animated.FlatList
-                onScroll={handleScroll}
-                scrollEventThrottle={16}
-                showsVerticalScrollIndicator={false}
-                data={playlist?.tracks.items}
-                ListHeaderComponent={
-                  <>
-                    <View style={s.imageView}>
-                      <ImageCmp
-                        animated={true}
-                        size={imageSize}
-                        source={playlist?.images?.[0]?.url}
-                      />
-                    </View>
-
-                    <View style={s.panel}>
-                      <View style={s.row}>
-                        <View style={s.titleView}>
-                          <TextCmp weight="bold" size={20}>
-                            {playlist?.name || 'Loading...'}
-                          </TextCmp>
-
-                          <View style={[s.row, {marginTop: verticalScale(10)}]}>
-                            <TextCmp weight="bold" size={17}>
-                              Created by' {playlist?.owner.display_name || ''}
-                            </TextCmp>
-                          </View>
-
-                          <View style={{marginTop: verticalScale(10)}}>
-                            <TextCmp color={Colors.text400} size={15}>
-                              Playlist
-                              <Entypo
-                                name="dot-single"
-                                color={'white'}
-                                size={15}
-                              />
-                              {playlist?.tracks?.items.length}
-                            </TextCmp>
-                          </View>
-
-                          <View
-                            style={[
-                              s.row,
-                              {
-                                marginTop: verticalScale(10),
-                                gap: scale(20),
-                              },
-                            ]}>
-                            <FontAwesome
-                              name="heart-o"
-                              color={'#CBB7B5'}
-                              size={moderateScale(25)}
-                            />
-
-                            <TouchableOpacity style={s.iconCircle}>
-                              <FontAwesome
-                                name="long-arrow-down"
-                                color={'#000000'}
-                                size={moderateScale(15)}
-                              />
-                            </TouchableOpacity>
-                            <Entypo
-                              name="dots-three-horizontal"
-                              color={'white'}
-                              size={moderateScale(20)}
-                            />
-                          </View>
-                        </View>
-                        <View style={s.playPauseView}>
-                          <TouchableOpacity
-                            onPress={handlePlayPause}
-                            style={[s.iconCircle, s.iconCircleBig]}>
-                            <Foundation
-                              name={
-                                isPlaying &&
-                                playingObj?.parentId === playlist.id
-                                  ? 'pause'
-                                  : 'play'
-                              }
-                              color="#000000"
-                              size={moderateScale(35)}
-                            />
-                          </TouchableOpacity>
-                        </View>
-                      </View>
-                    </View>
-                  </>
-                }
-                renderItem={({item, index}) => {
-                  return (
-                    <TouchableOpacity onPress={() => handleTrackSelect(index)}>
-                      <TrackCard item={item.track} />
-                    </TouchableOpacity>
-                  );
-                }}
-              />
-            </View>
-
-            <Animated.View
-              style={[
-                s.stickyPlayPauseView,
-                isSticky && {
-                  top: insets.top + scale(30),
-                  right: scale(20),
-                },
-                {opacity: playBtnOpacity},
-              ]}>
-              <TouchableOpacity
-                onPress={handlePlayPause}
-                style={[s.iconCircle, s.iconCircleBig]}>
-                <Foundation
-                  name={
-                    isPlaying && playingObj?.parentId === playlist.id
-                      ? 'pause'
-                      : 'play'
-                  }
-                  color="#000000"
-                  size={moderateScale(35)}
-                />
-              </TouchableOpacity>
-            </Animated.View>
-          </View>
-        </>
-      )}
-    </LinearGradient>
+    <ListDisplay
+      album={playlist}
+      tracks={tracks}
+      isLoading={isLoading}
+      header={<Header />}
+    />
   );
 };
 
 export default Playlist;
 
 const s = StyleSheet.create({
-  container: {
-    flex: 1,
-    paddingHorizontal: scale(10),
-  },
-  main: {
-    flex: 1,
-    paddingHorizontal: scale(10),
-  },
-  inner: {
-    paddingHorizontal: scale(10),
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: scale(20),
-    paddingVertical: verticalScale(10),
-    marginRight: scale(20),
-  },
   row: {
     flexDirection: 'row',
-  },
-  imageView: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginTop: verticalScale(20),
-  },
-  title: {
-    color: 'white',
-    fontFamily: Fonts.regular,
-    fontSize: moderateScale(16),
   },
   titleView: {
     flex: 1,
-  },
-  playPauseView: {
-    justifyContent: 'flex-end',
-    alignItems: 'flex-end',
-  },
-  stickyPlayPauseView: {
-    position: 'absolute',
-    zIndex: 999,
-  },
-  iconCircleSmall: {
-    height: scale(15),
-    width: scale(15),
-    borderRadius: moderateScale(7.5),
-  },
-  iconCircle: {
-    height: scale(20),
-    width: scale(20),
-    borderRadius: moderateScale(10),
-    backgroundColor: Colors.green300,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  iconCircleBig: {
-    height: scale(50),
-    width: scale(50),
-    borderRadius: moderateScale(25),
-  },
-  panel: {
-    marginTop: moderateScale(30),
-  },
-  row: {
-    flexDirection: 'row',
   },
 });

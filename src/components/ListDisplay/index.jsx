@@ -3,9 +3,7 @@ import {
   StyleSheet,
   Text,
   View,
-  FlatList,
   TouchableOpacity,
-  StatusBar,
   Animated,
 } from 'react-native';
 import React, {useEffect, useRef, useState} from 'react';
@@ -13,19 +11,14 @@ import LinearGradient from 'react-native-linear-gradient';
 import SimpleLineIcons from '@react-native-vector-icons/simple-line-icons';
 import Entypo from '@react-native-vector-icons/entypo';
 import {moderateScale, scale, verticalScale} from 'react-native-size-matters';
-import Fonts from '../../utils/constants/fonts';
-import {useRequest} from '../../hooks/useRequest';
-import {useDispatch, useSelector} from 'react-redux';
-import {createSpotifyAPI} from '../../utils/axios/axiosInstance';
+import {useSelector} from 'react-redux';
 import Loading from '../../components/Loading';
 import Colors from '../../utils/constants/colors';
 import FontAwesome from '@react-native-vector-icons/fontawesome';
 import Foundation from '@react-native-vector-icons/foundation';
 import TrackCard from '../../components/Cards/TrackCard';
 import {State, usePlaybackState} from 'react-native-track-player';
-import {setPlayingObj} from '../../store/playerSlice';
 import {
-  getCurrentTrack,
   loadAndPlayAlbum,
   playAlbumFromIndex,
   togglePlayPause,
@@ -33,10 +26,12 @@ import {
 import TextCmp from '../../components/Styled/TextCmp';
 import ImageCmp from '../../components/Styled/ImageCmp';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
-import {useIsFocused} from '@react-navigation/native';
+import {useIsFocused, useNavigation} from '@react-navigation/native';
+import {formatTotalDuration} from '../../utils/helpers/time';
 
-const ListDisplay = ({album, artist, isLoading}) => {
+const ListDisplay = ({album, header, isLoading, tracks, image}) => {
   const insets = useSafeAreaInsets();
+  const navigation = useNavigation();
   const isFocused = useIsFocused();
   const scrollY = useRef(new Animated.Value(0)).current;
   const [isSticky, setIsSticky] = useState(false);
@@ -48,6 +43,7 @@ const ListDisplay = ({album, artist, isLoading}) => {
     if (isFocused) {
       scrollY.setValue(0);
       setIsSticky(false);
+      console.log(formatTotalDuration(tracks));
     }
   }, [isFocused]);
 
@@ -57,9 +53,9 @@ const ListDisplay = ({album, artist, isLoading}) => {
       useNativeDriver: false,
       listener: event => {
         const y = event.nativeEvent.contentOffset.y;
-        if (y > 100 && !isSticky) {
+        if (y > 120 && !isSticky) {
           setIsSticky(true);
-        } else if (y <= 100 && isSticky) {
+        } else if (y <= 120 && isSticky) {
           setIsSticky(false);
         }
       },
@@ -77,7 +73,7 @@ const ListDisplay = ({album, artist, isLoading}) => {
     extrapolate: 'clamp',
   });
   const playBtnOpacity = scrollY.interpolate({
-    inputRange: [100, 200],
+    inputRange: [120, 200],
     outputRange: [0, 1],
     extrapolate: 'clamp',
   });
@@ -86,10 +82,14 @@ const ListDisplay = ({album, artist, isLoading}) => {
     const isSameAlbum = playingObj?.parentId === album?.id;
 
     if (!isSameAlbum || !playingObj) {
-      await loadAndPlayAlbum(album);
+      await loadAndPlayAlbum(album, tracks);
     } else {
       await togglePlayPause();
     }
+  };
+
+  const handleTrackSelect = async index => {
+    await playAlbumFromIndex(album, tracks, index);
   };
 
   return (
@@ -98,11 +98,17 @@ const ListDisplay = ({album, artist, isLoading}) => {
       locations={[0, 0.37, 0.63, 1]}
       start={{x: 0, y: 0}}
       end={{x: 0, y: 1}}
-      style={[s.container]}>
+      style={[s.container, {paddingTop: insets.top}]}>
       {isLoading ? (
         <Loading />
       ) : (
-        <View style={[s.main, {paddingTop: insets.top + 20}]}>
+        <View
+          style={[
+            s.main,
+            {
+              paddingBottom: playingObj ? verticalScale(90) : verticalScale(35),
+            },
+          ]}>
           <View style={s.header}>
             <TouchableOpacity onPress={() => navigation.goBack()}>
               <SimpleLineIcons name="arrow-left" color={'white'} size={15} />
@@ -114,6 +120,30 @@ const ListDisplay = ({album, artist, isLoading}) => {
               weight="semibold">
               {album?.name || 'Loading...'}
             </TextCmp>
+
+            <Animated.View
+              style={[
+                s.stickyPlayPauseView,
+                {
+                  right: scale(0),
+                  bottom: verticalScale(-20),
+                  opacity: playBtnOpacity,
+                },
+              ]}>
+              <TouchableOpacity
+                onPress={handlePlayPause}
+                style={[s.iconCircle, s.iconCircleBig]}>
+                <Foundation
+                  name={
+                    isPlaying && playingObj?.parentId === album.id
+                      ? 'pause'
+                      : 'play'
+                  }
+                  color="#000000"
+                  size={moderateScale(35)}
+                />
+              </TouchableOpacity>
+            </Animated.View>
           </View>
 
           <View style={s.inner}>
@@ -121,79 +151,40 @@ const ListDisplay = ({album, artist, isLoading}) => {
               onScroll={handleScroll}
               scrollEventThrottle={16}
               showsVerticalScrollIndicator={false}
-              data={album?.tracks.items}
+              data={tracks}
               ListHeaderComponent={
                 <>
                   <View style={s.imageView}>
                     <ImageCmp
                       animated={true}
                       size={imageSize}
-                      source={album?.images?.[0]?.url}
+                      source={image ? image : album?.images?.[0]?.url}
                     />
                   </View>
 
                   <View style={s.panel}>
-                    <View style={s.row}>
-                      <View style={s.titleView}>
-                        <TextCmp weight="bold" size={20}>
-                          {album?.name || 'Loading...'}
-                        </TextCmp>
+                    {header}
 
-                        <View style={[s.row, {marginTop: moderateScale(10)}]}>
-                          <ImageCmp
-                            source={artist?.images?.[0].url}
-                            size={30}
-                            borderRadius={15}
-                          />
-                          <View
-                            style={{
-                              justifyContent: 'center',
-                              marginLeft: scale(10),
-                            }}>
-                            <TextCmp weight="bold" size={17}>
-                              {artist?.name || ''}
-                            </TextCmp>
-                          </View>
-                        </View>
-                        <View style={{marginTop: verticalScale(10)}}>
-                          <TextCmp color={Colors.text400}>
-                            Album
-                            <Entypo
-                              name="dot-single"
-                              color={'white'}
-                              size={moderateScale(15)}
-                            />
-                            {new Date(album?.release_date).getFullYear()}
-                          </TextCmp>
-                        </View>
+                    <View style={[s.row]}>
+                      <View style={s.actionsView}>
+                        <FontAwesome
+                          name="heart-o"
+                          color={'#CBB7B5'}
+                          size={moderateScale(25)}
+                        />
 
-                        <View
-                          style={[
-                            s.row,
-                            {
-                              marginTop: verticalScale(10),
-                              gap: scale(20),
-                            },
-                          ]}>
+                        <TouchableOpacity style={s.iconCircle}>
                           <FontAwesome
-                            name="heart-o"
-                            color={'#CBB7B5'}
-                            size={moderateScale(25)}
+                            name="long-arrow-down"
+                            color={'#000000'}
+                            size={moderateScale(15)}
                           />
-
-                          <TouchableOpacity style={s.iconCircle}>
-                            <FontAwesome
-                              name="long-arrow-down"
-                              color={'#000000'}
-                              size={moderateScale(15)}
-                            />
-                          </TouchableOpacity>
-                          <Entypo
-                            name="dots-three-horizontal"
-                            color={'white'}
-                            size={moderateScale(20)}
-                          />
-                        </View>
+                        </TouchableOpacity>
+                        <Entypo
+                          name="dots-three-vertical"
+                          color={'white'}
+                          size={moderateScale(18)}
+                        />
                       </View>
                       <View style={s.playPauseView}>
                         <TouchableOpacity
@@ -219,32 +210,23 @@ const ListDisplay = ({album, artist, isLoading}) => {
                   <TrackCard item={item} />
                 </TouchableOpacity>
               )}
+              ListFooterComponent={
+                <>
+                  <View style={[s.row, {paddingVertical: verticalScale(15)}]}>
+                    <TextCmp size={15}>{`${tracks?.length} Songs`}</TextCmp>
+                    <Entypo
+                      name="dot-single"
+                      color={'white'}
+                      size={moderateScale(20)}
+                    />
+                    <TextCmp size={15}>{`${
+                      tracks?.length !== 0 && formatTotalDuration(tracks)
+                    }`}</TextCmp>
+                  </View>
+                </>
+              }
             />
           </View>
-
-          <Animated.View
-            style={[
-              s.stickyPlayPauseView,
-              isSticky && {
-                top: insets.top + scale(30),
-                right: scale(20),
-              },
-              {opacity: playBtnOpacity},
-            ]}>
-            <TouchableOpacity
-              onPress={handlePlayPause}
-              style={[s.iconCircle, s.iconCircleBig]}>
-              <Foundation
-                name={
-                  isPlaying && playingObj?.parentId === album.id
-                    ? 'pause'
-                    : 'play'
-                }
-                color="#000000"
-                size={moderateScale(35)}
-              />
-            </TouchableOpacity>
-          </Animated.View>
         </View>
       )}
     </LinearGradient>
@@ -274,6 +256,7 @@ const s = StyleSheet.create({
     gap: scale(20),
     paddingVertical: verticalScale(10),
     marginRight: scale(20),
+    position: 'relative',
   },
   imageView: {
     justifyContent: 'center',
@@ -283,7 +266,14 @@ const s = StyleSheet.create({
   titleView: {
     flex: 1,
   },
+  actionsView: {
+    flexDirection: 'row',
+    gap: scale(20),
+    flex: 1,
+    alignItems: 'center',
+  },
   playPauseView: {
+    flex: 1,
     justifyContent: 'flex-end',
     alignItems: 'flex-end',
   },

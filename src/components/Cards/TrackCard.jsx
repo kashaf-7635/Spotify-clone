@@ -42,9 +42,9 @@ const TrackCard = ({item}) => {
       </View>
       <View style={s.playPauseView}>
         <Entypo
-          name="dots-three-horizontal"
+          name="dots-three-vertical"
           color={'white'}
-          size={moderateScale(20)}
+          size={moderateScale(18)}
         />
       </View>
     </View>
