@@ -34,7 +34,6 @@ const ListDisplay = ({album, header, isLoading, tracks, image}) => {
   const navigation = useNavigation();
   const isFocused = useIsFocused();
   const scrollY = useRef(new Animated.Value(0)).current;
-  const [isSticky, setIsSticky] = useState(false);
   const playingObj = useSelector(state => state.player.playingObj);
   const playbackState = usePlaybackState().state;
   const isPlaying = playbackState === State.Playing;
@@ -42,7 +41,7 @@ const ListDisplay = ({album, header, isLoading, tracks, image}) => {
   useEffect(() => {
     if (isFocused) {
       scrollY.setValue(0);
-      setIsSticky(false);
+
       console.log(formatTotalDuration(tracks));
     }
   }, [isFocused]);
@@ -51,29 +50,21 @@ const ListDisplay = ({album, header, isLoading, tracks, image}) => {
     [{nativeEvent: {contentOffset: {y: scrollY}}}],
     {
       useNativeDriver: false,
-      listener: event => {
-        const y = event.nativeEvent.contentOffset.y;
-        if (y > 120 && !isSticky) {
-          setIsSticky(true);
-        } else if (y <= 120 && isSticky) {
-          setIsSticky(false);
-        }
-      },
     },
   );
 
   const imageSize = scrollY.interpolate({
-    inputRange: [0, 100],
-    outputRange: [200, 70],
+    inputRange: [0, 20, 40, 60, 80, 100],
+    outputRange: [200, 170, 140, 110, 90, 70],
     extrapolate: 'clamp',
   });
   const titleOpacity = scrollY.interpolate({
-    inputRange: [120, 200],
+    inputRange: [0, 100],
     outputRange: [0, 1],
     extrapolate: 'clamp',
   });
   const playBtnOpacity = scrollY.interpolate({
-    inputRange: [120, 200],
+    inputRange: [0, 100],
     outputRange: [0, 1],
     extrapolate: 'clamp',
   });
@@ -255,7 +246,6 @@ const s = StyleSheet.create({
     alignItems: 'center',
     gap: scale(20),
     paddingVertical: verticalScale(10),
-    marginRight: scale(20),
     position: 'relative',
   },
   imageView: {
@@ -279,7 +269,9 @@ const s = StyleSheet.create({
   },
   stickyPlayPauseView: {
     position: 'absolute',
+    right: 0,
     zIndex: 999,
+    paddingRight: scale(10),
   },
 
   iconCircleSmall: {
