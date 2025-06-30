@@ -59,12 +59,12 @@ const ListDisplay = ({album, header, isLoading, tracks, image}) => {
     extrapolate: 'clamp',
   });
   const titleOpacity = scrollY.interpolate({
-    inputRange: [0, 100],
+    inputRange: [150, 180],
     outputRange: [0, 1],
     extrapolate: 'clamp',
   });
   const playBtnOpacity = scrollY.interpolate({
-    inputRange: [0, 100],
+    inputRange: [220, 250],
     outputRange: [0, 1],
     extrapolate: 'clamp',
   });
