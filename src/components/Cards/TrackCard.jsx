@@ -64,12 +64,12 @@ const s = StyleSheet.create({
   iconCircleSmall: {
     height: scale(15),
     width: scale(15),
-    borderRadius: moderateScale(7.5),
+    borderRadius: scale(7.5),
   },
   iconCircle: {
     height: scale(20),
     width: scale(20),
-    borderRadius: moderateScale(10),
+    borderRadius: scale(10),
     backgroundColor: Colors.green300,
     justifyContent: 'center',
     alignItems: 'center',

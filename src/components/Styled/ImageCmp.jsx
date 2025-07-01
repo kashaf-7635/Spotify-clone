@@ -1,6 +1,6 @@
-import { Animated, Image, StyleSheet, View } from 'react-native';
+import {Animated, Image, StyleSheet, View} from 'react-native';
 import React from 'react';
-import { moderateScale, scale, verticalScale } from 'react-native-size-matters';
+import {moderateScale, scale, verticalScale} from 'react-native-size-matters';
 
 const ImageCmp = ({
   source,
@@ -11,23 +11,23 @@ const ImageCmp = ({
   resizeMode = 'cover',
   animated = false,
 }) => {
-  const isAnimatedValue = !!(size && typeof size !== 'number'); 
+  const isAnimatedValue = !!(size && typeof size !== 'number');
   const imageHeight = isAnimatedValue
     ? size
     : size
-      ? scale(size)
-      : verticalScale(height ?? 100);
+    ? scale(size)
+    : verticalScale(height ?? 100);
 
   const imageWidth = isAnimatedValue
     ? size
     : size
-      ? scale(size)
-      : scale(width ?? 100);
+    ? scale(size)
+    : scale(width ?? 100);
 
   const normalizedSource =
     source && typeof source === 'string'
-      ? { uri: source }
-      : source || { uri: 'https://via.placeholder.com/150' };
+      ? {uri: source}
+      : source || {uri: 'https://via.placeholder.com/150'};
 
   const Wrapper = animated ? Animated.View : View;
 
@@ -36,14 +36,10 @@ const ImageCmp = ({
       style={{
         height: imageHeight,
         width: imageWidth,
-        borderRadius: moderateScale(borderRadius),
+        borderRadius: size ? scale(borderRadius) : moderateScale(borderRadius),
         overflow: 'hidden',
       }}>
-      <Image
-        source={normalizedSource}
-        style={styles.image}
-        resizeMode={resizeMode}
-      />
+      <Image source={normalizedSource} style={styles.image} />
     </Wrapper>
   );
 };

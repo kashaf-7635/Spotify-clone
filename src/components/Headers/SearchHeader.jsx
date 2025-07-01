@@ -1,24 +1,26 @@
-import { StatusBar, StyleSheet, View } from 'react-native';
+import {StatusBar, StyleSheet, View} from 'react-native';
 import React from 'react';
 import SimpleLineIcons from '@react-native-vector-icons/simple-line-icons';
-import { moderateScale, scale, verticalScale } from 'react-native-size-matters';
+import {moderateScale, scale, verticalScale} from 'react-native-size-matters';
 import TextCmp from '../Styled/TextCmp';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 const SearchHeader = () => {
   const insets = useSafeAreaInsets();
   return (
     <>
-      <View style={[s.main,
-      { paddingTop: insets.top+ 20 }
-      ]}>
+      <View style={[s.main, {paddingTop: insets.top + verticalScale(20)}]}>
         <View style={s.titleContainer}>
           <TextCmp size={22} weight="bold">
             Search
           </TextCmp>
         </View>
         <View style={s.iconsContainer}>
-          <SimpleLineIcons name="camera" color={'white'} size={30} />
+          <SimpleLineIcons
+            name="camera"
+            color={'white'}
+            size={verticalScale(30)}
+          />
         </View>
       </View>
     </>

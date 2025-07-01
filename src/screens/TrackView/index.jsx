@@ -5,8 +5,9 @@ import {
   View,
   ScrollView,
   TouchableOpacity,
+  Animated,
 } from 'react-native';
-import React, { useState, useEffect, useRef } from 'react';
+import React, {useState, useEffect, useRef} from 'react';
 import LinearGradient from 'react-native-linear-gradient';
 import SimpleLineIcons from '@react-native-vector-icons/simple-line-icons';
 import Entypo from '@react-native-vector-icons/entypo';
@@ -15,48 +16,75 @@ import MaterialIcons from '@react-native-vector-icons/material-icons';
 import Ionicons from '@react-native-vector-icons/ionicons';
 import Feather from '@react-native-vector-icons/feather';
 import Fantisto from '@react-native-vector-icons/fontisto';
-import { moderateScale, scale, verticalScale } from 'react-native-size-matters';
+import {moderateScale, scale, verticalScale} from 'react-native-size-matters';
 import Colors from '../../utils/constants/colors';
 import Slider from '@react-native-community/slider';
 import Foundation from '@react-native-vector-icons/foundation';
-import { useDispatch, useSelector } from 'react-redux';
-import { formatTime } from '../../utils/helpers/time';
-import TrackPlayer, { usePlaybackState, State, useProgress, Event, RepeatMode } from 'react-native-track-player';
-import { useRequest } from '../../hooks/useRequest';
-import { createSpotifyAPI } from '../../utils/axios/axiosInstance';
-import { getCurrentTrack, togglePlayPause } from '../../utils/helpers/player';
+import {useDispatch, useSelector} from 'react-redux';
+import {formatTime} from '../../utils/helpers/time';
+import TrackPlayer, {
+  usePlaybackState,
+  State,
+  useProgress,
+  Event,
+  RepeatMode,
+} from 'react-native-track-player';
+import {useRequest} from '../../hooks/useRequest';
+import {createSpotifyAPI} from '../../utils/axios/axiosInstance';
+import {getCurrentTrack, togglePlayPause} from '../../utils/helpers/player';
 import TextCmp from '../../components/Styled/TextCmp';
 import ImageCmp from '../../components/Styled/ImageCmp';
-import { useNavigation } from '@react-navigation/native';
-import { setIsShuffled } from '../../store/playerSlice';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import {useIsFocused, useNavigation} from '@react-navigation/native';
+import {setIsShuffled} from '../../store/playerSlice';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 const TrackView = () => {
-  const dispatch = useDispatch()
+  const dispatch = useDispatch();
   const insets = useSafeAreaInsets();
-  const navigation = useNavigation()
+  const navigation = useNavigation();
   const playingObj = useSelector(state => state.player.playingObj);
   const isShuffled = useSelector(state => state.player.isShuffled);
-  const { position, duration } = useProgress(250);
+  const {position, duration} = useProgress(250);
   const [repeatMode, setRepeatMode] = useState(RepeatMode.Off);
   const originalQueueRef = useRef([]);
 
   const playbackState = usePlaybackState().state;
   const isPlaying = playbackState === State.Playing;
-  const { requestHandler, isLoading } = useRequest();
+  const {requestHandler, isLoading} = useRequest();
   const accessToken = useSelector(state => state.auth.accessToken);
   const refreshToken = useSelector(state => state.auth.refreshToken);
   const [album, setAlbum] = useState(null);
   const [hasNext, setHasNext] = useState(false);
   const [hasPrevious, setHasPrevious] = useState(false);
   const [canShuffle, setCanShuffle] = useState(false);
-  const [isLiked, setIsLiked] = useState(false)
+  const [isLiked, setIsLiked] = useState(false);
+  const isFocused = useIsFocused();
+  const scrollY = useRef(new Animated.Value(0)).current;
+  useEffect(() => {
+    if (isFocused) {
+      scrollY.setValue(0);
+    }
+  }, [isFocused]);
+  const handleScroll = Animated.event(
+    [{nativeEvent: {contentOffset: {y: scrollY}}}],
+    {
+      useNativeDriver: false,
+    },
+  );
+
+  const imageSize = scrollY.interpolate({
+    inputRange: [verticalScale(0), verticalScale(100)],
+    outputRange: [verticalScale(300), verticalScale(70)],
+    extrapolate: 'clamp',
+  });
+
   useEffect(() => {
     if (!playingObj) return;
 
     const spotifyAPI = createSpotifyAPI(accessToken, refreshToken);
     requestHandler({
-      requestFn: () => spotifyAPI.get(`/me/tracks/contains?ids=${playingObj?.id}`),
+      requestFn: () =>
+        spotifyAPI.get(`/me/tracks/contains?ids=${playingObj?.id}`),
       onSuccess: res => {
         setIsLiked(res?.data?.[0]);
       },
@@ -65,9 +93,6 @@ const TrackView = () => {
       },
     });
   }, [playingObj?.id, accessToken, refreshToken]);
-
-
-
 
   useEffect(() => {
     const checkTrackAvailability = async () => {
@@ -84,14 +109,13 @@ const TrackView = () => {
 
     const listener = TrackPlayer.addEventListener(
       Event.PlaybackActiveTrackChanged,
-      checkTrackAvailability
+      checkTrackAvailability,
     );
 
     return () => {
       listener.remove();
     };
   }, []);
-
 
   const handleNext = async () => {
     if (hasNext) {
@@ -112,8 +136,6 @@ const TrackView = () => {
     requestHandler({
       requestFn: () => spotifyAPI.get(`/albums/${playingObj?.albumId}`),
       onSuccess: async res => {
-
-
         setAlbum(res.data);
       },
       onError: err => {
@@ -128,9 +150,9 @@ const TrackView = () => {
 
   useEffect(() => {
     if (!playingObj) {
-      navigation.goBack()
+      navigation.goBack();
     }
-  }, [playingObj])
+  }, [playingObj]);
 
   useEffect(() => {
     const fetchRepeatMode = async () => {
@@ -157,7 +179,7 @@ const TrackView = () => {
     const queue = await TrackPlayer.getQueue();
 
     if (queue.length <= 1) {
-      console.warn("Shuffle not applicable for 1 or fewer tracks");
+      console.warn('Shuffle not applicable for 1 or fewer tracks');
       return;
     }
 
@@ -176,12 +198,12 @@ const TrackView = () => {
         await TrackPlayer.skip(currentIndex);
       }
       await TrackPlayer.play();
-      dispatch(setIsShuffled(true))
+      dispatch(setIsShuffled(true));
     } else {
       const originalQueue = originalQueueRef.current;
 
       if (originalQueue.length === 0) {
-        console.warn("Original queue not available");
+        console.warn('Original queue not available');
         return;
       }
 
@@ -191,39 +213,36 @@ const TrackView = () => {
         await TrackPlayer.skip(currentIndex);
       }
       await TrackPlayer.play();
-      dispatch(setIsShuffled(false))
-
+      dispatch(setIsShuffled(false));
     }
   };
 
-  const handleAddToLikedSongs = (trackId) => {
+  const handleAddToLikedSongs = trackId => {
     const spotifyAPI = createSpotifyAPI(accessToken, refreshToken);
     requestHandler({
-      requestFn: () => spotifyAPI.put(`/me/tracks`, { ids: [`${trackId}`] }),
+      requestFn: () => spotifyAPI.put(`/me/tracks`, {ids: [`${trackId}`]}),
       onSuccess: async res => {
         console.log(res.data);
-
       },
       onError: err => {
         console.log(err.response?.data || err.message);
       },
     });
-  }
+  };
 
-  const handleRemoveFromLikedSongs = (trackId) => {
+  const handleRemoveFromLikedSongs = trackId => {
     const spotifyAPI = createSpotifyAPI(accessToken, refreshToken);
     requestHandler({
       requestFn: () => spotifyAPI.delete(`/me/tracks?ids=${trackId}`),
       onSuccess: async res => {
         console.log(res.data);
-
       },
       onError: err => {
         console.log(err.response?.data || err.message);
       },
     });
-  }
-  const handleFav = async (trackId) => {
+  };
+  const handleFav = async trackId => {
     if (isLiked) {
       await handleRemoveFromLikedSongs(trackId);
       setIsLiked(false);
@@ -233,51 +252,54 @@ const TrackView = () => {
     }
   };
 
-
   return (
     <>
       <LinearGradient
         colors={['#962419', '#661710', '#430E09']}
         // locations={[0, 0.45, 1]}
         style={s.container}>
-        <ScrollView
-          showsVerticalScrollIndicator={false}
-          style={{ flex: 1 }}
-          contentContainerStyle={s.main}>
-          <View style={[s.main,
-          { paddingTop: insets.top+ 20 }
-          ]}>
-            <View style={s.header}>
-              <TouchableOpacity style={{ flex: 0.1 }} onPress={() => navigation.goBack()}>
-                <SimpleLineIcons
-                  name="arrow-down"
-                  color={'white'}
-                  size={moderateScale(20)}
-                />
-              </TouchableOpacity>
-              <View style={{ flex: 0.8 }}>
-                <TextCmp size={16} align="center">
-                  {album?.name}
-                </TextCmp>
-              </View>
-
-              <View
-                style={{
-                  flex: 0.1,
-                  alignItems: 'flex-end',
-                }}>
-                <Entypo
-                  name="dots-three-horizontal"
-                  color={'white'}
-                  size={20}
-                />
-              </View>
+        <View style={[s.main, {paddingTop: insets.top + verticalScale(20)}]}>
+          <View style={s.header}>
+            <TouchableOpacity
+              style={{flex: 0.1}}
+              onPress={() => navigation.goBack()}>
+              <SimpleLineIcons
+                name="arrow-down"
+                color={'white'}
+                size={moderateScale(20)}
+              />
+            </TouchableOpacity>
+            <View style={{flex: 0.8}}>
+              <TextCmp size={16} align="center">
+                {album?.name}
+              </TextCmp>
             </View>
 
+            <View
+              style={{
+                flex: 0.1,
+                alignItems: 'flex-end',
+              }}>
+              <Entypo
+                name="dots-three-horizontal"
+                color={'white'}
+                size={moderateScale(20)}
+              />
+            </View>
+          </View>
+
+          <ScrollView
+            onScroll={handleScroll}
+            showsVerticalScrollIndicator={false}
+            style={{flex: 1}}
+            contentContainerStyle={s.main}>
             <View style={s.image}>
-              <ImageCmp source={playingObj?.artwork} width={300} height={300} />
+              <ImageCmp
+                animated={true}
+                source={playingObj?.artwork}
+                size={imageSize}
+              />
             </View>
-
             <View style={s.panel}>
               <View style={s.row}>
                 <View style={s.titleView}>
@@ -291,7 +313,9 @@ const TrackView = () => {
                     </TextCmp>
                   </View>
                 </View>
-                <TouchableOpacity style={s.iconView} onPress={() => handleFav(playingObj.id)}>
+                <TouchableOpacity
+                  style={s.iconView}
+                  onPress={() => handleFav(playingObj.id)}>
                   <FontAwesome
                     name={`${isLiked ? 'heart' : 'heart-o'}`}
                     color={'#CBB7B5'}
@@ -302,7 +326,7 @@ const TrackView = () => {
 
               <View style={s.slider}>
                 <Slider
-                  style={{ width: '110%', height: verticalScale(40) }}
+                  style={{width: '110%', height: verticalScale(40)}}
                   minimumValue={0}
                   maximumValue={1}
                   value={duration ? position / duration : 0}
@@ -313,31 +337,42 @@ const TrackView = () => {
                   maximumTrackTintColor="#a3a2a2"
                   thumbTintColor="#FFFFFF"
                 />
-                <View style={{ position: 'absolute', bottom: 0, left: 0 }}>
+                <View style={{position: 'absolute', bottom: 0, left: 0}}>
                   <TextCmp size={12}>{formatTime(position * 1000)}</TextCmp>
                 </View>
 
-                <View style={{ position: 'absolute', bottom: 0, right: 0 }}>
-                  <TextCmp size={12}>-{formatTime((duration - position) * 1000)}</TextCmp>
+                <View style={{position: 'absolute', bottom: 0, right: 0}}>
+                  <TextCmp size={12}>
+                    -{formatTime((duration - position) * 1000)}
+                  </TextCmp>
                 </View>
               </View>
 
               <View style={s.actions}>
-
-                <TouchableOpacity style={s.left} onPress={toggleShuffle} disabled={!canShuffle}>
+                <TouchableOpacity
+                  style={s.left}
+                  onPress={toggleShuffle}
+                  disabled={!canShuffle}>
                   <Entypo
                     name="shuffle"
-                    color={!canShuffle ? "#666666" : (isShuffled ? Colors.green300 : "#FFFFFF")}
+                    color={
+                      !canShuffle
+                        ? '#666666'
+                        : isShuffled
+                        ? Colors.green300
+                        : '#FFFFFF'
+                    }
                     size={moderateScale(30)}
                   />
                 </TouchableOpacity>
 
-
                 <View style={s.mid}>
-                  <TouchableOpacity disabled={!hasPrevious} onPress={handlePrevious}>
+                  <TouchableOpacity
+                    disabled={!hasPrevious}
+                    onPress={handlePrevious}>
                     <FontAwesome
                       name="step-backward"
-                      color={hasPrevious ? "#FFFFFF" : "#666666"}
+                      color={hasPrevious ? '#FFFFFF' : '#666666'}
                       size={moderateScale(40)}
                     />
                   </TouchableOpacity>
@@ -352,21 +387,23 @@ const TrackView = () => {
                   <TouchableOpacity disabled={!hasNext} onPress={handleNext}>
                     <FontAwesome
                       name="step-forward"
-                      color={hasNext ? "#FFFFFF" : "#666666"}
+                      color={hasNext ? '#FFFFFF' : '#666666'}
                       size={moderateScale(40)}
                     />
                   </TouchableOpacity>
                 </View>
 
-
                 <TouchableOpacity style={s.right} onPress={toggleRepeat}>
                   <Feather
                     name="repeat"
-                    color={repeatMode === RepeatMode.Off ? '#CBB7B5' : Colors.green300}
+                    color={
+                      repeatMode === RepeatMode.Off
+                        ? '#CBB7B5'
+                        : Colors.green300
+                    }
                     size={moderateScale(30)}
                   />
                 </TouchableOpacity>
-
               </View>
 
               <View style={s.row}>
@@ -395,8 +432,8 @@ const TrackView = () => {
                 </View>
               </View>
             </View>
-          </View>
-        </ScrollView>
+          </ScrollView>
+        </View>
       </LinearGradient>
     </>
   );
@@ -416,6 +453,8 @@ const s = StyleSheet.create({
   header: {
     flexDirection: 'row',
     width: '100%',
+    paddingHorizontal: scale(10),
+    paddingVertical: verticalScale(10),
   },
   image: {
     justifyContent: 'center',

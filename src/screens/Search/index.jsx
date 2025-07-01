@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, {useEffect, useState} from 'react';
 import {
   StyleSheet,
   View,
@@ -9,23 +9,23 @@ import {
   TouchableOpacity,
   Dimensions,
 } from 'react-native';
-import { moderateScale, scale, verticalScale } from 'react-native-size-matters';
+import {moderateScale, scale, verticalScale} from 'react-native-size-matters';
 import FontAwesome from '@react-native-vector-icons/fontawesome';
 import Fonts from '../../utils/constants/fonts';
 import Colors from '../../utils/constants/colors';
 import Categories from '../../data/Categories';
 import SearchModal from '../../components/SearchModal';
-import { useRequest } from '../../hooks/useRequest';
-import { useSelector } from 'react-redux';
-import { createSpotifyAPI } from '../../utils/axios/axiosInstance';
-import { FlatList } from 'react-native-gesture-handler';
+import {useRequest} from '../../hooks/useRequest';
+import {useSelector} from 'react-redux';
+import {createSpotifyAPI} from '../../utils/axios/axiosInstance';
+import {FlatList} from 'react-native-gesture-handler';
 import Loading from '../../components/Loading';
 import TextCmp from '../../components/Styled/TextCmp';
 import ImageCmp from '../../components/Styled/ImageCmp';
 
 const Search = () => {
   const [modalVisible, setModalVisible] = useState(false);
-  const { requestHandler, isLoading } = useRequest();
+  const {requestHandler, isLoading} = useRequest();
   const accessToken = useSelector(state => state.auth.accessToken);
   const refreshToken = useSelector(state => state.auth.refreshToken);
   const [allCategories, setAllCategories] = useState([]);
@@ -68,10 +68,10 @@ const Search = () => {
   //   data: groupIntoRows(section.data),
   // }));
 
-  const renderItem = ({ item }) => (
+  const renderItem = ({item}) => (
     <View style={s.row}>
-      <View style={[s.box, { backgroundColor: getRandomDarkColor() }]}>
-        <View style={{ zIndex: 1 }}>
+      <View style={[s.box, {backgroundColor: getRandomDarkColor()}]}>
+        <View style={{zIndex: 1}}>
           <TextCmp weight="bold" size={16}>
             {item.name}
           </TextCmp>
@@ -104,7 +104,11 @@ const Search = () => {
             autoFocus
           />
         </TouchableOpacity>
-        <View style={[s.listStyle, { paddingBottom: playingObj?.id && verticalScale(60) }]}>
+        <View
+          style={[
+            s.listStyle,
+            {paddingBottom: playingObj?.id && verticalScale(60)},
+          ]}>
           <View style={s.sectionTitle}>
             <TextCmp weight="bold" size={18}>
               Browse All
@@ -184,10 +188,9 @@ const s = StyleSheet.create({
     paddingTop: verticalScale(20),
   },
   box: {
-    backgroundColor: '#9854B2',
     paddingHorizontal: scale(10),
     paddingVertical: verticalScale(10),
-    width: scale(150),
+    width: scale(155),
     height: verticalScale(75),
     borderRadius: moderateScale(10),
     overflow: 'hidden',
@@ -196,7 +199,7 @@ const s = StyleSheet.create({
     position: 'absolute',
     bottom: 0,
     right: -10,
-    transform: [{ rotate: '25deg' }],
+    transform: [{rotate: '25deg'}],
   },
   placeholderText: {
     color: 'white',

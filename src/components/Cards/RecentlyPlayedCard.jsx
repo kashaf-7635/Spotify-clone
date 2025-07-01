@@ -53,7 +53,7 @@ export default RecentlyPlayedCard;
 const s = StyleSheet.create({
   main: {
     width: scale(100),
-    height: verticalScale(120),
+    // height: verticalScale(120),
   },
   imageContainer: {
     justifyContent: 'center',

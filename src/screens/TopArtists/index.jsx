@@ -1,8 +1,14 @@
-import {StyleSheet, View, FlatList, TouchableOpacity} from 'react-native';
-import React, {useEffect, useState} from 'react';
+import {
+  StyleSheet,
+  View,
+  FlatList,
+  TouchableOpacity,
+  Animated,
+} from 'react-native';
+import React, {useEffect, useRef, useState} from 'react';
 import LinearGradient from 'react-native-linear-gradient';
 import SimpleLineIcons from '@react-native-vector-icons/simple-line-icons';
-import {moderateScale, verticalScale} from 'react-native-size-matters';
+import {moderateScale, scale, verticalScale} from 'react-native-size-matters';
 import Fonts from '../../utils/constants/fonts';
 import {useRequest} from '../../hooks/useRequest';
 import {useSelector} from 'react-redux';
@@ -14,6 +20,7 @@ import TextCmp from '../../components/Styled/TextCmp';
 import ImageCmp from '../../components/Styled/ImageCmp';
 
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import {useIsFocused} from '@react-navigation/native';
 
 const TopArtists = ({navigation}) => {
   const insets = useSafeAreaInsets();
@@ -24,6 +31,30 @@ const TopArtists = ({navigation}) => {
   const userData = useSelector(state => state.auth.userData);
   const [topArtists, setTopArtists] = useState([]);
   const playingObj = useSelector(state => state.player.playingObj);
+  const isFocused = useIsFocused();
+  const scrollY = useRef(new Animated.Value(0)).current;
+  useEffect(() => {
+    if (isFocused) {
+      scrollY.setValue(0);
+    }
+  }, [isFocused]);
+  const handleScroll = Animated.event(
+    [{nativeEvent: {contentOffset: {y: scrollY}}}],
+    {
+      useNativeDriver: false,
+    },
+  );
+
+  const imageSize = scrollY.interpolate({
+    inputRange: [verticalScale(0), verticalScale(100)],
+    outputRange: [verticalScale(200), verticalScale(70)],
+    extrapolate: 'clamp',
+  });
+  const titleOpacity = scrollY.interpolate({
+    inputRange: [verticalScale(150), verticalScale(180)],
+    outputRange: [0, 1],
+    extrapolate: 'clamp',
+  });
 
   useEffect(() => {
     if (!accessToken) return;
@@ -54,7 +85,7 @@ const TopArtists = ({navigation}) => {
         <Loading />
       ) : (
         <>
-          <View style={[s.main, {paddingTop: insets.top + 20}]}>
+          <View style={[s.main, {paddingTop: insets.top + verticalScale(20)}]}>
             <TouchableOpacity onPress={() => navigation.goBack()}>
               <SimpleLineIcons
                 name="arrow-left"
@@ -64,18 +95,18 @@ const TopArtists = ({navigation}) => {
             </TouchableOpacity>
 
             <View style={s.inner}>
-              <FlatList
+              <Animated.FlatList
+                onScroll={handleScroll}
                 showsVerticalScrollIndicator={false}
                 data={topArtists}
                 ListHeaderComponent={
                   <>
                     <View style={s.imageView}>
-                      <View style={s.imageContainer}>
-                        <ImageCmp
-                          size={200}
-                          source={require('../../assets/images/album/2.png')}
-                        />
-                      </View>
+                      <ImageCmp
+                        animated={true}
+                        size={imageSize}
+                        source={require('../../assets/images/album/2.png')}
+                      />
                     </View>
 
                     <View style={s.panel}>
@@ -164,22 +195,22 @@ const s = StyleSheet.create({
   },
 
   iconCircleSmall: {
-    height: moderateScale(15),
-    width: moderateScale(15),
-    borderRadius: moderateScale(7.5),
+    height: scale(15),
+    width: scale(15),
+    borderRadius: scale(7.5),
   },
   iconCircle: {
-    height: moderateScale(20),
-    width: moderateScale(20),
-    borderRadius: moderateScale(10),
+    height: scale(20),
+    width: scale(20),
+    borderRadius: scale(10),
     backgroundColor: Colors.green300,
     justifyContent: 'center',
     alignItems: 'center',
   },
   iconCircleBig: {
-    height: moderateScale(50),
-    width: moderateScale(50),
-    borderRadius: moderateScale(25),
+    height: scale(50),
+    width: scale(50),
+    borderRadius: scale(25),
   },
   panel: {
     marginTop: moderateScale(30),

@@ -1,13 +1,13 @@
-import { StyleSheet, TouchableOpacity, View } from 'react-native';
+import {StyleSheet, TouchableOpacity, View} from 'react-native';
 import React from 'react';
-import { scale } from 'react-native-size-matters';
-import { useNavigation } from '@react-navigation/native';
+import {scale, verticalScale} from 'react-native-size-matters';
+import {useNavigation} from '@react-navigation/native';
 import Colors from '../../utils/constants/colors';
 import TextCmp from '../Styled/TextCmp';
 import ImageCmp from '../Styled/ImageCmp';
-import { loadAndPlaySingleTrack } from '../../utils/helpers/player';
+import {loadAndPlaySingleTrack} from '../../utils/helpers/player';
 
-const NewReleaseAlbum = ({ item }) => {
+const NewReleaseAlbum = ({item}) => {
   const navigation = useNavigation();
 
   const image =
@@ -17,19 +17,19 @@ const NewReleaseAlbum = ({ item }) => {
 
   const handleNavigation = async () => {
     if (item.type === 'track') {
-      loadAndPlaySingleTrack(item)
+      loadAndPlaySingleTrack(item);
     }
 
     if (item.type === 'album') {
-      navigation.navigate('Album', { albumId: item.id });
+      navigation.navigate('Album', {albumId: item.id});
     }
 
     if (item.type === 'playlist') {
-      navigation.navigate('Playlist', { playlistId: item.id });
+      navigation.navigate('Playlist', {playlistId: item.id});
     }
 
     if (item.type === 'artist') {
-      navigation.navigate('Artist', { artistId: item.id });
+      navigation.navigate('Artist', {artistId: item.id});
     }
   };
 
@@ -62,9 +62,9 @@ const s = StyleSheet.create({
   },
 
   trackText: {
-    marginTop: 10,
+    marginTop: verticalScale(10),
   },
   albumText: {
-    marginTop: 10,
+    marginTop: verticalScale(10),
   },
 });

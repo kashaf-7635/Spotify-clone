@@ -181,7 +181,7 @@ const s = StyleSheet.create({
     alignItems: 'center',
   },
   searchContainer: {
-    borderRadius: 10,
+    borderRadius: moderateScale(10),
     flexDirection: 'row',
     backgroundColor: '#282828',
     alignItems: 'center',
@@ -190,7 +190,7 @@ const s = StyleSheet.create({
   },
   input: {
     fontFamily: Fonts.regular,
-    fontSize: 18,
+    fontSize: moderateScale(18),
     color: 'white',
     flex: 1,
     marginLeft: scale(10),
@@ -201,7 +201,7 @@ const s = StyleSheet.create({
   },
   heading: {
     fontFamily: Fonts.bold,
-    fontSize: 20,
+    fontSize: moderateScale(20),
     color: 'white',
   },
   searchResult: {

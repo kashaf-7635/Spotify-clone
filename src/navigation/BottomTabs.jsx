@@ -20,6 +20,7 @@ import {useSelector} from 'react-redux';
 import LikedSongs from '../screens/LikedSongs';
 import TopSongs from '../screens/TopSongs';
 import TopArtists from '../screens/TopArtists';
+import { moderateScale } from 'react-native-size-matters';
 
 const Tab = createBottomTabNavigator();
 
@@ -44,7 +45,7 @@ const BottomTabs = () => {
           tabBarActiveTintColor: 'white',
           tabBarInactiveTintColor: Colors.bg500,
           tabBarLabelStyle: {
-            fontSize: 16,
+            fontSize: moderateScale(15),
             fontFamily: Fonts.regular,
           },
         }}>

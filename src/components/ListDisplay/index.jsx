@@ -54,17 +54,17 @@ const ListDisplay = ({album, header, isLoading, tracks, image}) => {
   );
 
   const imageSize = scrollY.interpolate({
-    inputRange: [0, 20, 40, 60, 80, 100],
-    outputRange: [200, 170, 140, 110, 90, 70],
+    inputRange: [verticalScale(0), verticalScale(100)],
+    outputRange: [verticalScale(200), verticalScale(70)],
     extrapolate: 'clamp',
   });
   const titleOpacity = scrollY.interpolate({
-    inputRange: [150, 180],
+    inputRange: [verticalScale(150), verticalScale(180)],
     outputRange: [0, 1],
     extrapolate: 'clamp',
   });
   const playBtnOpacity = scrollY.interpolate({
-    inputRange: [220, 250],
+    inputRange: [verticalScale(220), verticalScale(250)],
     outputRange: [0, 1],
     extrapolate: 'clamp',
   });
@@ -102,7 +102,11 @@ const ListDisplay = ({album, header, isLoading, tracks, image}) => {
           ]}>
           <View style={s.header}>
             <TouchableOpacity onPress={() => navigation.goBack()}>
-              <SimpleLineIcons name="arrow-left" color={'white'} size={15} />
+              <SimpleLineIcons
+                name="arrow-left"
+                color={'white'}
+                size={moderateScale(15)}
+              />
             </TouchableOpacity>
             <TextCmp
               size={18}
@@ -277,12 +281,12 @@ const s = StyleSheet.create({
   iconCircleSmall: {
     height: scale(15),
     width: scale(15),
-    borderRadius: moderateScale(7.5),
+    borderRadius: scale(7.5),
   },
   iconCircle: {
     height: scale(20),
     width: scale(20),
-    borderRadius: moderateScale(10),
+    borderRadius: scale(10),
     backgroundColor: Colors.green300,
     justifyContent: 'center',
     alignItems: 'center',
@@ -290,7 +294,7 @@ const s = StyleSheet.create({
   iconCircleBig: {
     height: scale(50),
     width: scale(50),
-    borderRadius: moderateScale(25),
+    borderRadius: scale(25),
   },
   panel: {
     marginTop: verticalScale(30),

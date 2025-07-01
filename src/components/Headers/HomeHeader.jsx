@@ -1,32 +1,34 @@
-import { StatusBar, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import {
+  StatusBar,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import React from 'react';
 import Fonts from '../../utils/constants/fonts';
 import MaterialIcons from '@react-native-vector-icons/material-icons';
-import { moderateScale, scale, verticalScale } from 'react-native-size-matters';
-import { persistor, store } from '../../store';
+import {moderateScale, scale, verticalScale} from 'react-native-size-matters';
+import {persistor, store} from '../../store';
 import Colors from '../../utils/constants/colors';
 import TrackPlayer from 'react-native-track-player';
 import TextCmp from '../Styled/TextCmp';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 export const logoutFromSpotify = async () => {
   console.log('logging out...');
 
   await TrackPlayer.reset();
-  store.dispatch({ type: 'RESET_STORE' });
+  store.dispatch({type: 'RESET_STORE'});
   await persistor.purge();
   console.log('Store reset and storage purged');
-
-
 };
 
 const HomeHeader = () => {
   const insets = useSafeAreaInsets();
   return (
     <>
-      <View style={[s.main,
-      { paddingTop: insets.top + 20}
-      ]}>
+      <View style={[s.main, {paddingTop: insets.top + verticalScale(20)}]}>
         <View style={s.titleContainer}>
           <TextCmp weight="bold" size={22}>
             Recently played
@@ -65,7 +67,6 @@ export default HomeHeader;
 
 const s = StyleSheet.create({
   main: {
-
     paddingHorizontal: scale(20),
     flexDirection: 'row',
     backgroundColor: Colors.bg800,
