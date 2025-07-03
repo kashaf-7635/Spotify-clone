@@ -20,7 +20,7 @@ import {useSelector} from 'react-redux';
 import LikedSongs from '../screens/LikedSongs';
 import TopSongs from '../screens/TopSongs';
 import TopArtists from '../screens/TopArtists';
-import { moderateScale } from 'react-native-size-matters';
+import {moderateScale} from 'react-native-size-matters';
 
 const Tab = createBottomTabNavigator();
 
