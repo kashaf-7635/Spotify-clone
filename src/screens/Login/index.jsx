@@ -8,9 +8,7 @@ import {
   Alert,
   ImageBackground,
 } from 'react-native';
-import {loginToSpotify} from '../../utils/auth/AuthService';
 import Colors from '../../utils/constants/colors';
-import Fonts from '../../utils/constants/fonts';
 import {moderateScale, scale, verticalScale} from 'react-native-size-matters';
 import {useDispatch, useSelector} from 'react-redux';
 import {authenticate} from '../../store/authSlice';
@@ -19,11 +17,10 @@ import {useRequest} from '../../hooks/useRequest';
 import Loading from '../../components/Loading';
 import TextCmp from '../../components/Styled/TextCmp';
 import ImageCmp from '../../components/Styled/ImageCmp';
-import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import {handleOpenInAppBrowser} from '../../utils/auth/AuthService';
 
 export default function Login({}) {
   const dispatch = useDispatch();
-  const insets = useSafeAreaInsets();
   const {requestHandler, isLoading} = useRequest();
   const userData = useSelector(state => state.auth.userData);
 
@@ -32,12 +29,12 @@ export default function Login({}) {
   }, [userData]);
   const handleLogin = async () => {
     requestHandler({
-      requestFn: () => loginToSpotify(),
+      requestFn: () => handleOpenInAppBrowser(),
       onSuccess: async authResult => {
         console.log(authResult);
 
-        const accessToken = authResult.accessToken;
-        const refreshToken = authResult.refreshToken;
+        const accessToken = authResult.access_token;
+        const refreshToken = authResult.refresh_token;
         const spotifyAPI = createSpotifyAPI(accessToken, refreshToken);
 
         requestHandler({

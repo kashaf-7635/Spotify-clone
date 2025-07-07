@@ -37,7 +37,6 @@ const Home = ({navigation}) => {
     if (!accessToken) return;
 
     const spotifyAPI = createSpotifyAPI(accessToken, refreshToken);
-
     requestHandler({
       requestFn: () => spotifyAPI.get(`/browse/new-releases`),
       onSuccess: async res => {

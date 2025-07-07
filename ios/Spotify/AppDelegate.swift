@@ -63,7 +63,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, RNAppAuthAuthorizationFlo
     {
       return true
     }
-
+       return false
     // Fall back to React Native’s own Linking logic
     return RCTLinkingManager.application(
       application,
