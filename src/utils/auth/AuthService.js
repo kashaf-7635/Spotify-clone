@@ -10,19 +10,21 @@ import axios from 'axios';
 export const handleOpenInAppBrowser = async () => {
   const authUrl = `https://accounts.spotify.com/authorize?client_id=${SPOTIFY_CLIENT_ID}&redirect_uri=${SPOTIFY_REDIRECT_URI}&response_type=code&scope=${scopes}&show_dialog=${true}`;
   try {
-    const response = await InAppBrowser.openAuth(
-      authUrl,
-      SPOTIFY_REDIRECT_URI,
-      {},
-    );
-    console.log(response);
+    if (await InAppBrowser.isAvailable()) {
+      const response = await InAppBrowser.openAuth(
+        authUrl,
+        SPOTIFY_REDIRECT_URI,
+        {},
+      );
+      console.log(response);
 
-    let code = response.url.split('code=')[1];
-    console.log(code, 'code');
+      let code = response.url.split('code=')[1];
+      console.log(code, 'code');
 
-    if (code) {
-      const res = await getAccessToken(code);
-      return res;
+      if (code) {
+        const res = await getAccessToken(code);
+        return res;
+      }
     }
   } catch (error) {
     console.error('Error opening InAppBrowser:', error);
