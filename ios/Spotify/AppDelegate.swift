@@ -4,13 +4,11 @@ import React_RCTAppDelegate
 import ReactAppDependencyProvider
 
 @main
-class AppDelegate: UIResponder, UIApplicationDelegate, RNAppAuthAuthorizationFlowManager {
+class AppDelegate: UIResponder, UIApplicationDelegate {
   var window: UIWindow?
 
   var reactNativeDelegate: ReactNativeDelegate?
   var reactNativeFactory: RCTReactNativeFactory?
-  public weak var authorizationFlowManagerDelegate:
-    RNAppAuthAuthorizationFlowManagerDelegate?
 
   func application(
     _ application: UIApplication,
@@ -33,46 +31,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate, RNAppAuthAuthorizationFlo
 
     return true
   }
-
-  func application(
-    _ app: UIApplication,
-    open url: URL,
-    options: [UIApplication.OpenURLOptionsKey: Any] = [:]
-  ) -> Bool {
-    if let authorizationFlowManagerDelegate = self
-      .authorizationFlowManagerDelegate
-    {
-      if authorizationFlowManagerDelegate.resumeExternalUserAgentFlow(with: url)
-      {
-        return true
-      }
-    }
-    return false
-  }
-
-  func application(
-    _ application: UIApplication,
-    continue userActivity: NSUserActivity,
-    restorationHandler: @escaping ([UIUserActivityRestoring]?) -> Void
-  ) -> Bool {
-
-    // Handle Universal-Link–style OAuth redirects first
-    if userActivity.activityType == NSUserActivityTypeBrowsingWeb,
-      let delegate = authorizationFlowManagerDelegate,
-      delegate.resumeExternalUserAgentFlow(with: userActivity.webpageURL)
-    {
-      return true
-    }
-       return false
-    // Fall back to React Native’s own Linking logic
-    return RCTLinkingManager.application(
-      application,
-      continue: userActivity,
-      restorationHandler: restorationHandler
-    )
-  }
-
-
 }
 
 class ReactNativeDelegate: RCTDefaultReactNativeFactoryDelegate {

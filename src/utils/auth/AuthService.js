@@ -11,6 +11,8 @@ export const handleOpenInAppBrowser = async () => {
   const authUrl = `https://accounts.spotify.com/authorize?client_id=${SPOTIFY_CLIENT_ID}&redirect_uri=${SPOTIFY_REDIRECT_URI}&response_type=code&scope=${scopes}&show_dialog=${true}`;
   try {
     if (await InAppBrowser.isAvailable()) {
+
+      
       const response = await InAppBrowser.openAuth(
         authUrl,
         SPOTIFY_REDIRECT_URI,
@@ -56,14 +58,3 @@ export const getAccessToken = async code => {
     console.log('Spotify login failed', error.response?.data);
   }
 };
-
-// export const loginToSpotify = async () => {
-//   try {
-//     console.log('login in.....');
-//     const result = await authorize(authConfig);
-//     console.log('login done.....');
-//     return result;
-//   } catch (error) {
-//     console.log('Spotify login failed', error);
-//   }
-// };
