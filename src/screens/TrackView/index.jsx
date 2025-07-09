@@ -258,7 +258,7 @@ const TrackView = () => {
         colors={['#962419', '#661710', '#430E09']}
         // locations={[0, 0.45, 1]}
         style={s.container}>
-        <View style={[s.main, {paddingTop: insets.top + verticalScale(20)}]}>
+        <View style={[s.main, {paddingTop: insets.top}]}>
           <View style={s.header}>
             <TouchableOpacity
               style={{flex: 0.1}}

@@ -187,6 +187,7 @@ const s = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: scale(10),
     flex: 0.8,
+    paddingVertical: verticalScale(10),
   },
   input: {
     fontFamily: Fonts.regular,

@@ -99,10 +99,14 @@ const Artist = ({route, navigation}) => {
         <Loading />
       ) : (
         <>
-          <View style={[s.main, {paddingTop: insets.top + verticalScale(20)}]}>
+          <View style={[s.main, {paddingTop: insets.top}]}>
             <View style={s.header}>
               <TouchableOpacity onPress={() => navigation.goBack()}>
-                <SimpleLineIcons name="arrow-left" color={'white'} size={moderateScale(15)} />
+                <SimpleLineIcons
+                  name="arrow-left"
+                  color={'white'}
+                  size={moderateScale(15)}
+                />
               </TouchableOpacity>
               <TextCmp
                 size={18}

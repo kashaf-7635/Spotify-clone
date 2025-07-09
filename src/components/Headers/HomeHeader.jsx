@@ -28,7 +28,7 @@ const HomeHeader = () => {
   const insets = useSafeAreaInsets();
   return (
     <>
-      <View style={[s.main, {paddingTop: insets.top + verticalScale(20)}]}>
+      <View style={[s.main, {paddingTop: insets.top}]}>
         <View style={s.titleContainer}>
           <TextCmp weight="bold" size={22}>
             Recently played

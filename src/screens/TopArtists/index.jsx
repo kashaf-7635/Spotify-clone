@@ -85,7 +85,7 @@ const TopArtists = ({navigation}) => {
         <Loading />
       ) : (
         <>
-          <View style={[s.main, {paddingTop: insets.top + verticalScale(20)}]}>
+          <View style={[s.main, {paddingTop: insets.top}]}>
             <TouchableOpacity onPress={() => navigation.goBack()}>
               <SimpleLineIcons
                 name="arrow-left"

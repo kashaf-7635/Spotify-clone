@@ -33,14 +33,14 @@ export default function Login({}) {
       onSuccess: async authResult => {
         console.log(authResult);
 
-        const accessToken = authResult.access_token;
-        const refreshToken = authResult.refresh_token;
+        const accessToken = authResult?.access_token;
+        const refreshToken = authResult?.refresh_token;
         const spotifyAPI = createSpotifyAPI(accessToken, refreshToken);
 
         requestHandler({
           requestFn: () => spotifyAPI.get('/me'),
           onSuccess: userResponse => {
-            const userData = userResponse.data;
+            const userData = userResponse?.data;
             console.log({userData, accessToken, refreshToken});
 
             dispatch(authenticate({userData, accessToken, refreshToken}));

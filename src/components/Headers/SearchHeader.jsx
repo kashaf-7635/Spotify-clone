@@ -9,7 +9,7 @@ const SearchHeader = () => {
   const insets = useSafeAreaInsets();
   return (
     <>
-      <View style={[s.main, {paddingTop: insets.top + verticalScale(20)}]}>
+      <View style={[s.main, {paddingTop: insets.top}]}>
         <View style={s.titleContainer}>
           <TextCmp size={22} weight="bold">
             Search

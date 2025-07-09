@@ -95,14 +95,19 @@ const Search = () => {
             color={Colors.textdark}
             size={moderateScale(25)}
           />
+          <View style={s.input}>
+            <TextCmp size={16} color={Colors.textdark}>
+              Artists, songs, or podcasts
+            </TextCmp>
+          </View>
 
-          <TextInput
+          {/* <TextInput
             style={s.input}
             placeholder="Artists, songs, or podcasts"
             placeholderTextColor={Colors.textdark}
             editable={false}
             autoFocus
-          />
+          /> */}
         </TouchableOpacity>
         <View
           style={[
@@ -172,11 +177,9 @@ const s = StyleSheet.create({
     backgroundColor: 'white',
     alignItems: 'center',
     paddingHorizontal: scale(10),
+    paddingVertical: verticalScale(10),
   },
   input: {
-    fontFamily: Fonts.regular,
-    fontSize: moderateScale(16),
-    color: Colors.textdark,
     flex: 1,
     marginLeft: scale(10),
   },

@@ -89,7 +89,7 @@ const ListDisplay = ({album, header, isLoading, tracks, image}) => {
       locations={[0, 0.37, 0.63, 1]}
       start={{x: 0, y: 0}}
       end={{x: 0, y: 1}}
-      style={[s.container, {paddingTop: insets.top}]}>
+      style={[s.container]}>
       {isLoading ? (
         <Loading />
       ) : (
@@ -100,7 +100,7 @@ const ListDisplay = ({album, header, isLoading, tracks, image}) => {
               paddingBottom: playingObj ? verticalScale(90) : verticalScale(35),
             },
           ]}>
-          <View style={s.header}>
+          <View style={[s.header, {paddingTop: insets.top}]}>
             <TouchableOpacity onPress={() => navigation.goBack()}>
               <SimpleLineIcons
                 name="arrow-left"
@@ -251,6 +251,7 @@ const s = StyleSheet.create({
     gap: scale(20),
     paddingVertical: verticalScale(10),
     position: 'relative',
+    paddingTop: verticalScale(20),
   },
   imageView: {
     justifyContent: 'center',
