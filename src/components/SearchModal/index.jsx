@@ -1,21 +1,21 @@
 import {
   StyleSheet,
   View,
-  Modal,
+  Platform,
   TouchableOpacity,
   Text,
   TextInput,
   FlatList,
 } from 'react-native';
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import Colors from '../../utils/constants/colors';
-import {moderateScale, scale, verticalScale} from 'react-native-size-matters';
+import { moderateScale, scale, verticalScale } from 'react-native-size-matters';
 import FontAwesome from '@react-native-vector-icons/fontawesome';
 import MaterialIcons from '@react-native-vector-icons/material-icons';
 import Fonts from '../../utils/constants/fonts';
-import {useRequest} from '../../hooks/useRequest';
-import {useDispatch, useSelector} from 'react-redux';
-import {createSpotifyAPI} from '../../utils/axios/axiosInstance';
+import { useRequest } from '../../hooks/useRequest';
+import { useDispatch, useSelector } from 'react-redux';
+import { createSpotifyAPI } from '../../utils/axios/axiosInstance';
 import useDebouncedValue from '../../hooks/useDebouncedValue';
 import LibraryCard from '../Cards/LibraryCard';
 import {
@@ -25,10 +25,11 @@ import {
 } from '../../store/playerSlice';
 import TextCmp from '../Styled/TextCmp';
 
-const SearchModal = ({modalVisible, setModalVisible}) => {
+
+const SearchModal = ({ modalVisible, setModalVisible }) => {
   const dispatch = useDispatch();
   const [searchQuery, setSearchQuery] = useState(false);
-  const {requestHandler, isLoading} = useRequest();
+  const { requestHandler, isLoading } = useRequest();
   const accessToken = useSelector(state => state.auth.accessToken);
   const refreshToken = useSelector(state => state.auth.refreshToken);
   const recentSearches = useSelector(state => state.player.recentSearches);
@@ -112,7 +113,7 @@ const SearchModal = ({modalVisible, setModalVisible}) => {
             keyExtractor={(item, index) =>
               item.item?.id || `${item.type}-${index}`
             }
-            renderItem={({item}) => <LibraryCard item={item} />}
+            renderItem={({ item }) => <LibraryCard item={item} />}
           />
         ) : (
           <>
@@ -128,7 +129,7 @@ const SearchModal = ({modalVisible, setModalVisible}) => {
             <FlatList
               data={recentSearches}
               keyExtractor={(item, index) => `${item}-${index}`}
-              renderItem={({item}) => (
+              renderItem={({ item }) => (
                 <View
                   style={{
                     width: '100%',
@@ -187,7 +188,7 @@ const s = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: scale(10),
     flex: 0.8,
-    paddingVertical: verticalScale(10),
+    paddingVertical: Platform.OS === 'ios' ? verticalScale(10) : 0,
   },
   input: {
     fontFamily: Fonts.regular,

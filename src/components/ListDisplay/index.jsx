@@ -6,18 +6,18 @@ import {
   TouchableOpacity,
   Animated,
 } from 'react-native';
-import React, {useEffect, useRef, useState} from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import LinearGradient from 'react-native-linear-gradient';
 import SimpleLineIcons from '@react-native-vector-icons/simple-line-icons';
 import Entypo from '@react-native-vector-icons/entypo';
-import {moderateScale, scale, verticalScale} from 'react-native-size-matters';
-import {useSelector} from 'react-redux';
+import { moderateScale, scale, verticalScale } from 'react-native-size-matters';
+import { useSelector } from 'react-redux';
 import Loading from '../../components/Loading';
 import Colors from '../../utils/constants/colors';
 import FontAwesome from '@react-native-vector-icons/fontawesome';
 import Foundation from '@react-native-vector-icons/foundation';
 import TrackCard from '../../components/Cards/TrackCard';
-import {State, usePlaybackState} from 'react-native-track-player';
+import { State, usePlaybackState } from 'react-native-track-player';
 import {
   loadAndPlayAlbum,
   playAlbumFromIndex,
@@ -25,11 +25,11 @@ import {
 } from '../../utils/helpers/player';
 import TextCmp from '../../components/Styled/TextCmp';
 import ImageCmp from '../../components/Styled/ImageCmp';
-import {useSafeAreaInsets} from 'react-native-safe-area-context';
-import {useIsFocused, useNavigation} from '@react-navigation/native';
-import {formatTotalDuration} from '../../utils/helpers/time';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useIsFocused, useNavigation } from '@react-navigation/native';
+import { formatTotalDuration } from '../../utils/helpers/time';
 
-const ListDisplay = ({album, header, isLoading, tracks, image}) => {
+const ListDisplay = ({ album, header, isLoading, tracks, image }) => {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation();
   const isFocused = useIsFocused();
@@ -47,7 +47,7 @@ const ListDisplay = ({album, header, isLoading, tracks, image}) => {
   }, [isFocused]);
 
   const handleScroll = Animated.event(
-    [{nativeEvent: {contentOffset: {y: scrollY}}}],
+    [{ nativeEvent: { contentOffset: { y: scrollY } } }],
     {
       useNativeDriver: false,
     },
@@ -87,8 +87,8 @@ const ListDisplay = ({album, header, isLoading, tracks, image}) => {
     <LinearGradient
       colors={['#C63224', '#641D17', '#271513', '#121212']}
       locations={[0, 0.37, 0.63, 1]}
-      start={{x: 0, y: 0}}
-      end={{x: 0, y: 1}}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 0, y: 1 }}
       style={[s.container]}>
       {isLoading ? (
         <Loading />
@@ -97,10 +97,10 @@ const ListDisplay = ({album, header, isLoading, tracks, image}) => {
           style={[
             s.main,
             {
-              paddingBottom: playingObj ? verticalScale(90) : verticalScale(35),
+              paddingBottom: playingObj ? verticalScale(120) : verticalScale(60),
             },
           ]}>
-          <View style={[s.header, {paddingTop: insets.top}]}>
+          <View style={[s.header, { paddingTop: insets.top }]}>
             <TouchableOpacity onPress={() => navigation.goBack()}>
               <SimpleLineIcons
                 name="arrow-left"
@@ -200,23 +200,22 @@ const ListDisplay = ({album, header, isLoading, tracks, image}) => {
                   </View>
                 </>
               }
-              renderItem={({item, index}) => (
+              renderItem={({ item, index }) => (
                 <TouchableOpacity onPress={() => handleTrackSelect(index)}>
                   <TrackCard item={item} />
                 </TouchableOpacity>
               )}
               ListFooterComponent={
                 <>
-                  <View style={[s.row, {paddingVertical: verticalScale(15)}]}>
+                  <View style={[s.row, { paddingVertical: verticalScale(15) }]}>
                     <TextCmp size={15}>{`${tracks?.length} Songs`}</TextCmp>
                     <Entypo
                       name="dot-single"
                       color={'white'}
                       size={moderateScale(20)}
                     />
-                    <TextCmp size={15}>{`${
-                      tracks?.length !== 0 && formatTotalDuration(tracks)
-                    }`}</TextCmp>
+                    <TextCmp size={15}>{`${tracks?.length !== 0 && formatTotalDuration(tracks)
+                      }`}</TextCmp>
                   </View>
                 </>
               }
